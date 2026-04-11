@@ -68,7 +68,10 @@ python scrape_fichas.py
 python3 -m venv .venv
 source .venv/bin/activate
 pip install requests
+export TRANSPARENTIA_API_KEY="tu-api-key"
 ```
+
+La API key se puede obtener inspeccionando las peticiones de red en [transparentia.newtral.es](https://transparentia.newtral.es).
 
 ## Cobertura
 

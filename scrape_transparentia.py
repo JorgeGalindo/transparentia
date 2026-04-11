@@ -14,10 +14,11 @@ import requests
 import csv
 import time
 import sys
+import os
 from pathlib import Path
 
 BASE_URL = "https://transparentia.newtral.es"
-API_KEY = "REDACTED"
+API_KEY = os.environ.get("TRANSPARENTIA_API_KEY", "")
 HEADERS = {"X-API-KEY": API_KEY}
 OUTPUT_DIR = Path(__file__).parent
 
@@ -191,6 +192,10 @@ TOP PARTIDOS:
 
 
 if __name__ == "__main__":
+    if not API_KEY:
+        print("ERROR: Set TRANSPARENTIA_API_KEY environment variable")
+        sys.exit(1)
+
     print("=" * 70)
     print("SCRAPER TRANSPARENTIA - transparentia.newtral.es")
     print("=" * 70)
