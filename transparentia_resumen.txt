@@ -1,0 +1,46 @@
+
+======================================================================
+TRANSPARENTIA - RESUMEN DEL SCRAPING
+======================================================================
+
+Total registros:     23,548
+Activos:             12,220
+Con salario > 0:     18,700
+
+POR ÁMBITO:
+  Local                     13,928
+  Autonómico                 5,342
+  Sin ámbito                 2,276
+  Nacional                   1,874
+  Europeo                       93
+  Provincial                    35
+
+POR ROL:
+  Alcalde                   11,879
+  Altos cargos               4,283
+  Sin rol                    3,126
+  Diputado                   2,581
+  Concejal                     974
+  Senador                      434
+  Asesor                        99
+  Cargo europeo                 93
+  Presidente                    54
+  Ministro                      25
+
+TOP PARTIDOS:
+  Sin partido                4,857
+  PSOE                       4,648
+  PP                         4,273
+  Partido Popular            2,123
+  PSOE-A                       436
+  Ciudadanos                   403
+  VOX                          331
+  CM                           321
+  EH Bildu                     285
+  EAJ-PNV                      248
+  ERC-AM                       236
+  Podemos                      181
+  ERC                          173
+  CiU                          171
+  Independiente                151
+======================================================================
