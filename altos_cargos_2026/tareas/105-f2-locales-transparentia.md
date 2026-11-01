@@ -1,9 +1,10 @@
 modelo: sonnet
 salida: fase2/fuentes/locales/cargo_electo_local.csv
-estado: pendiente
+estado: hecha
 prioridad: 2
 comun: fase2
 agente: claude-p
+ejecutada: 2026-11-01 21:45
 ---
 Carpeta asignada: fase2/fuentes/locales/.
 Dos fuentes de cargos electos locales y autonómicos para las personas de nuestro universo:

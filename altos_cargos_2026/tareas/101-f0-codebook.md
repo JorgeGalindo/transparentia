@@ -1,9 +1,10 @@
 modelo: opus
 salida: fase2/CODEBOOK.md
-estado: pendiente
+estado: hecha
 prioridad: 1
 comun: fase2
 agente: claude-p
+ejecutada: 2026-11-01 22:01
 ---
 Carpeta asignada: fase2/codebook/ (y el fichero fase2/CODEBOOK.md).
 Redacta el CODEBOOK v0 operativo a partir de ARQUITECTURA.md (secciones 1, 5 y 12 mandan). Debe permitir que un modelo

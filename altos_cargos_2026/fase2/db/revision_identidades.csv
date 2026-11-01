@@ -1,0 +1,18 @@
+motivo,a,b,tablas_a,tablas_b,ratio,persona_id_a,persona_id_b
+contenido_2_tokens,Julián Navarro,Alberto Julián Requena Navarro,consejos,consejos,0.636,846,33
+grafia_parecida,Ana Flor Albuquerque Gutiérrez,Ana Flor Alburquerque Gutíerrez,estructura,estructura,0.984,109,110
+contenido_2_tokens,Ángel Simón,Miguel Ángel Simón Gómez,consejos,consejos,0.629,156,1192
+grafia_parecida,Calos María Juárez Colera,Carlos María Juárez Colera,estructura,consejos,0.98,244,262
+contenido_2_tokens,Carmen Allo,Carmen Allo Pérez,consejos,consejos,0.786,279,280
+contenido_2_tokens,Cristina Vidal,Cristina Vidal Otero,consejos,consejos,0.824,339,340
+contenido_2_tokens,David Santos,David Javier Santos Sánchez,consejos,consejos,0.615,361,357
+contenido_2_tokens,David Santos,Santos David Lázaro Francisco,consejos,consejos,0.439,361,1406
+contenido_sin_orden,María Gámez Gámez,Eva María Lidón Gámez,consejos,consejos,0.632,1038,452
+contenido_2_tokens,Javier Morales,Francisco Javier Garzón Morales,consejos,consejos,0.622,651,497
+grafia_parecida,Francisco Javier Ponce Martínez,Francisco Javier Sánchez Martínez,consejos,consejos,0.906,507,512
+contenido_2_tokens,Javier Morales,Javier Morales Abad,consejos,consejos,0.848,651,652
+contenido_2_tokens,Julián Navarro,Julián Navarro Pascual,consejos,consejos,0.778,846,847
+contenido_2_tokens,Miguel Pérez,Miguel Ángel Pérez Triano,consejos,boe,0.649,1205,1189
+contenido_2_tokens,Miguel Pérez,Miguel Pérez López,consejos,consejos,0.8,1205,1206
+persona_juridica_sin_representante,AXIS Participaciones Empresariales (ver filas AXIS),Fond-ICO Global (y demás fondos Fond-ICO),consejos,,,,
+persona_juridica_sin_representante,"FROB, representado por su presidente","Sareb (Sociedad de Gestión de Activos procedentes de la Reestructuración Bancaria, S.A.)",consejos,,,,

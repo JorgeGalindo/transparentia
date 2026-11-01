@@ -1,9 +1,10 @@
 modelo: sonnet
 salida: fase2/db/base.duckdb
-estado: pendiente
+estado: hecha
 prioridad: 1
 comun: fase2
 agente: claude-p
+ejecutada: 2026-11-01 21:48
 ---
 Carpeta asignada: fase2/db/.
 Implementa la base relacional de ARQUITECTURA.md §4 en DuckDB: fase2/db/schema.sql (todas las tablas, aunque estén

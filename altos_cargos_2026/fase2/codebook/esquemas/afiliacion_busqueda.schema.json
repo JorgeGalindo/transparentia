@@ -1,0 +1,105 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "afiliacion_busqueda.schema.json",
+  "title": "Resultado de la búsqueda de afiliación documentada de una persona (CODEBOOK v0, sección 3)",
+  "description": "Una salida por persona y búsqueda. Cada hecho necesita al menos una evidencia con url, fecha de consulta y cita textual (≤300 caracteres) que contenga el nombre de la persona y el cargo o partido. Sin evidencia no hay hecho. El puesto que se está codificando nunca es un hecho.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["persona", "fecha_busqueda", "buscador", "consultas", "fuentes_consultadas", "hechos", "homonimos_descartados", "nivel_max", "nivel_max_publicable", "familia_principal", "estado_busqueda", "notas"],
+  "properties": {
+    "persona": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["persona_id", "nombre_completo", "contexto_desambiguacion"],
+      "properties": {
+        "persona_id": {"type": "string"},
+        "nombre_completo": {"type": "string"},
+        "contexto_desambiguacion": {"type": "string", "description": "Cargo actual, territorio, año de nacimiento si es público, trayectoria conocida."}
+      }
+    },
+    "fecha_busqueda": {"type": "string", "description": "AAAA-MM-DD"},
+    "buscador": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["modelo", "version_prompt"],
+      "properties": {"modelo": {"type": "string"}, "version_prompt": {"type": "string"}}
+    },
+    "consultas": {"type": "array", "items": {"type": "string"}, "description": "Consultas literales lanzadas."},
+    "fuentes_consultadas": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["fuente", "url", "resultado"],
+        "properties": {
+          "fuente": {"type": "string", "description": "Congreso, Senado, Parlamento Europeo, parlamento autonómico, concejales, Infoelectoral, BOE, Wikidata, web del partido, prensa…"},
+          "url": {"type": ["string", "null"]},
+          "resultado": {"type": "string", "enum": ["hallazgo", "sin_hallazgo", "bloqueada", "no_consultada"]}
+        }
+      }
+    },
+    "hechos": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "tipo", "nivel", "ambito", "institucion_u_organo", "cargo", "partido_literal", "familia", "territorio", "fecha_inicio", "fecha_fin", "elegido", "independiente_declarado", "cruce_identidad", "evidencias"],
+        "properties": {
+          "id": {"type": "string", "description": "h1, h2…"},
+          "tipo": {"type": "string", "enum": ["cargo_electo", "miembro_gobierno", "cargo_organico", "candidatura", "militancia_declarada", "alto_cargo_libre_designacion", "gabinete_o_eventual", "asesor_parlamentario", "fundacion_de_partido", "apoderado_interventor_delegado", "declarado_independiente"]},
+          "nivel": {"type": "integer", "enum": [0, 1, 2, 3, 4], "description": "Según la tabla 3.1 del CODEBOOK."},
+          "ambito": {"type": "string", "enum": ["europeo", "nacional", "autonomico", "provincial_insular", "local", "partido_estatal", "partido_autonomico", "partido_provincial_local", "otro"]},
+          "institucion_u_organo": {"type": "string"},
+          "cargo": {"type": "string"},
+          "partido_literal": {"type": ["string", "null"], "description": "Tal como aparece en la fuente."},
+          "familia": {"$ref": "#/$defs/familia"},
+          "territorio": {"type": ["string", "null"]},
+          "fecha_inicio": {"type": ["string", "null"]},
+          "fecha_fin": {"type": ["string", "null"]},
+          "elegido": {"type": ["boolean", "null"], "description": "Solo para candidaturas."},
+          "independiente_declarado": {"type": "boolean", "description": "true si la fuente dice que ocupó el cargo como independiente."},
+          "cruce_identidad": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["calidad", "criterios"],
+            "properties": {
+              "calidad": {"type": "string", "enum": ["exacto", "probable", "dudoso"]},
+              "criterios": {"type": "array", "items": {"type": "string", "enum": ["nombre_y_dos_apellidos", "territorio", "fechas_compatibles", "trayectoria_compatible", "bio_o_foto_enlazada", "fuente_cita_cargo_actual"]}}
+            }
+          },
+          "evidencias": {"type": "array", "items": {"$ref": "#/$defs/evidencia"}}
+        }
+      }
+    },
+    "homonimos_descartados": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["descripcion", "motivo", "url"],
+        "properties": {"descripcion": {"type": "string"}, "motivo": {"type": "string"}, "url": {"type": ["string", "null"]}}
+      }
+    },
+    "nivel_max": {"type": "integer", "enum": [0, 1, 2, 3, 4], "description": "Máximo nivel entre hechos con cruce exacto o probable que cumplen el mínimo de fuentes (tabla 3.3)."},
+    "nivel_max_publicable": {"type": ["integer", "null"], "enum": [3, 4, null], "description": "3 o 4 solo con cruce exacto y ≥1 fuente A o ≥2 B independientes; si no, null."},
+    "familia_principal": {"$ref": "#/$defs/familia"},
+    "estado_busqueda": {"type": "string", "enum": ["hallazgos", "buscada_sin_hallazgo", "declarado_independiente", "bloqueada_parcial"]},
+    "notas": {"type": ["string", "null"]}
+  },
+  "$defs": {
+    "familia": {"type": ["string", "null"], "enum": ["PSOE", "SUMAR", "PODEMOS", "PP", "VOX", "CS", "ERC", "JUNTS", "PNV", "BILDU", "BNG", "CC", "OTRO", "IND_GOBIERNO", null], "description": "Tabla 3.4. IND_GOBIERNO: independiente en un gobierno; la familia del gobierno va en notas o en partido_literal."},
+    "evidencia": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["url", "fecha_consulta", "tipo_fuente", "medio_o_institucion", "cita", "localizador"],
+      "properties": {
+        "url": {"type": "string"},
+        "fecha_consulta": {"type": "string", "description": "AAAA-MM-DD"},
+        "tipo_fuente": {"type": "string", "enum": ["A_oficial", "B_secundaria", "C_no_vale_sola"]},
+        "medio_o_institucion": {"type": "string"},
+        "cita": {"type": "string", "description": "Texto literal, ≤300 caracteres, con el nombre y el cargo o partido."},
+        "localizador": {"type": ["string", "null"], "description": "Página, sección o fecha de la pieza."}
+      }
+    }
+  }
+}

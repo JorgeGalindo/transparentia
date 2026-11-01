@@ -1,0 +1,149 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "codificacion_ocupacion.schema.json",
+  "title": "Codificación final de una ocupación (persona × puesto × periodo) (CODEBOOK v0, secciones 1–5)",
+  "description": "Una salida por ocupación, codificador y versión del codebook. La experiencia se mide en la fecha de inicio de la ocupación; la afiliación, con hechos anteriores o simultáneos hasta la fecha de corte.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["ocupacion", "version_codebook", "posicion", "afiliacion", "experiencia", "ppse", "perfil", "confianza", "justificacion", "evidencias_clave", "codificador", "revision"],
+  "properties": {
+    "ocupacion": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["ocupacion_id", "persona_id", "posicion_id", "origen", "id_fila", "fecha_inicio", "fecha_corte"],
+      "properties": {
+        "ocupacion_id": {"type": "string"},
+        "persona_id": {"type": "string"},
+        "posicion_id": {"type": "string"},
+        "origen": {"type": "string", "enum": ["estructura", "otros", "consejos", "evento"]},
+        "id_fila": {"type": ["integer", "null"], "description": "Fila de clase_posicion.csv para la foto S0."},
+        "fecha_inicio": {"type": ["string", "null"], "description": "Fecha de nombramiento (BOE, BORME o Consejo de Ministros)."},
+        "fecha_corte": {"type": "string"}
+      }
+    },
+    "version_codebook": {"type": "string", "description": "p. ej., v0"},
+    "posicion": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["clase", "regla_clase", "sector_principal", "sector_secundario", "tipo_silla", "requisito_A1", "excepcion_rd", "intensidad_tecnica"],
+      "properties": {
+        "clase": {"type": "string", "enum": ["T-legal", "T-empresa", "T-regulador", "P", "FUERA"]},
+        "regla_clase": {"type": "string", "description": "Código de la regla (L3, E4, R2…)."},
+        "sector_principal": {"$ref": "#/$defs/sector"},
+        "sector_secundario": {"anyOf": [{"$ref": "#/$defs/sector"}, {"type": "null"}]},
+        "tipo_silla": {"type": "string", "enum": ["no_aplica", "primer_ejecutivo", "presidente_no_ejecutivo", "dominical_funcionario_ministerio", "dominical_otro_publico", "independiente", "ejecutivo", "elegido_cortes", "otro_externo", "representante_privado_o_social", "no_publicado"]},
+        "requisito_A1": {"type": "string", "enum": ["ley", "estatuto", "no", "no_consta"], "description": "ley: Subsecretaría, SGT y DG de ministerio (arts. 63, 65 y 66 L40/2015)."},
+        "excepcion_rd": {"type": ["boolean", "null"], "description": "DG cuyo RD de estructura exime del requisito de funcionario (art. 66.2)."},
+        "intensidad_tecnica": {"type": ["integer", "null"], "enum": [0, 1, 2, 3, null]}
+      }
+    },
+    "afiliacion": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["nivel", "nivel_publicable", "familia", "partido_literal", "hechos_ids", "anio_ultimo_hecho", "meses_desde_ultimo_cargo_electo", "solo_hechos_posteriores", "independiente_en_gobierno", "estado_busqueda"],
+      "properties": {
+        "nivel": {"type": "integer", "enum": [0, 1, 2, 3, 4]},
+        "nivel_publicable": {"type": ["integer", "null"], "enum": [3, 4, null]},
+        "familia": {"type": ["string", "null"], "enum": ["PSOE", "SUMAR", "PODEMOS", "PP", "VOX", "CS", "ERC", "JUNTS", "PNV", "BILDU", "BNG", "CC", "OTRO", "IND_GOBIERNO", null]},
+        "partido_literal": {"type": ["string", "null"]},
+        "hechos_ids": {"type": "array", "items": {"type": "string"}},
+        "anio_ultimo_hecho": {"type": ["integer", "null"]},
+        "meses_desde_ultimo_cargo_electo": {"type": ["integer", "null"], "description": "Del fin del último cargo electo al inicio de la ocupación (D6). Negativo si es simultáneo."},
+        "solo_hechos_posteriores": {"type": "boolean", "description": "true si todos los hechos son posteriores al nombramiento."},
+        "independiente_en_gobierno": {"type": "boolean"},
+        "estado_busqueda": {"type": "string", "enum": ["no_buscada", "hallazgos", "buscada_sin_hallazgo", "declarado_independiente", "bloqueada_parcial"]}
+      }
+    },
+    "experiencia": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["determinable", "cobertura_trayectoria_pct", "anios_sector", "anios_sector_estricto", "trayectoria_ids_sector", "direccion_comparable", "credencial", "sin_experiencia_u3", "sin_experiencia_u0", "sin_experiencia_u5", "sin_experiencia_estricto"],
+      "properties": {
+        "determinable": {"type": "boolean", "description": "Regla 4.6: se puede afirmar 'sin experiencia' solo con cobertura suficiente; 'con experiencia' basta una prueba positiva."},
+        "cobertura_trayectoria_pct": {"type": ["number", "null"]},
+        "anios_sector": {"type": ["number", "null"], "description": "Componente (a), un decimal, cómputo principal."},
+        "anios_sector_estricto": {"type": ["number", "null"], "description": "Sin cargos de designación política ni electos ejecutivos."},
+        "trayectoria_ids_sector": {"type": "array", "items": {"type": "string"}},
+        "direccion_comparable": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["valor", "valor_estricto", "trayectoria_ids", "justificacion"],
+          "properties": {
+            "valor": {"type": "string", "enum": ["si", "no", "no_determinable"]},
+            "valor_estricto": {"type": "string", "enum": ["si", "no", "no_determinable"]},
+            "trayectoria_ids": {"type": "array", "items": {"type": "string"}},
+            "justificacion": {"type": "string"}
+          }
+        },
+        "credencial": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["valor", "tipo", "detalle"],
+          "properties": {
+            "valor": {"type": "string", "enum": ["si", "no", "no_determinable"]},
+            "tipo": {"type": "string", "enum": ["c1_cuerpo_sector", "c2_cuerpo_generalista", "c3_doctorado", "c4_master_o_ingenieria", "c5_especialidad_sanitaria", "ninguna"]},
+            "detalle": {"type": ["string", "null"]}
+          }
+        },
+        "sin_experiencia_u3": {"type": ["boolean", "null"], "description": "Principal: (a) < 3 años, sin (b) y sin (c). null si no determinable."},
+        "sin_experiencia_u0": {"type": ["boolean", "null"]},
+        "sin_experiencia_u5": {"type": ["boolean", "null"]},
+        "sin_experiencia_estricto": {"type": ["boolean", "null"]}
+      }
+    },
+    "ppse": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["principal", "afiliacion_2", "umbral_0", "umbral_5", "estricto", "reciente_10a"],
+      "properties": {
+        "principal": {"type": ["boolean", "null"], "description": "afiliación ≥3 y sin_experiencia_u3."},
+        "afiliacion_2": {"type": ["boolean", "null"]},
+        "umbral_0": {"type": ["boolean", "null"]},
+        "umbral_5": {"type": ["boolean", "null"]},
+        "estricto": {"type": ["boolean", "null"]},
+        "reciente_10a": {"type": ["boolean", "null"]}
+      }
+    },
+    "perfil": {"type": "string", "enum": ["tecnico", "politico", "hibrido", "sin_perfil", "no_determinable"]},
+    "confianza": {"type": "string", "enum": ["alta", "media", "baja"]},
+    "justificacion": {"type": "string", "description": "≤600 caracteres. Remite a ids de hechos (h*) y de trayectoria (t*)."},
+    "evidencias_clave": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["url", "fecha_consulta", "tipo_fuente", "cita"],
+        "properties": {
+          "url": {"type": "string"},
+          "fecha_consulta": {"type": "string"},
+          "tipo_fuente": {"type": "string", "enum": ["A_oficial", "B_secundaria", "C_no_vale_sola"]},
+          "cita": {"type": "string"}
+        }
+      }
+    },
+    "codificador": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["modelo", "rol", "version_prompt", "fecha"],
+      "properties": {
+        "modelo": {"type": "string", "description": "claude-sonnet-5-5, claude-opus-5-5 o 'humano:<iniciales>'."},
+        "rol": {"type": "string", "enum": ["primario", "doble", "adjudicador", "humano"]},
+        "version_prompt": {"type": "string"},
+        "fecha": {"type": "string"}
+      }
+    },
+    "revision": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["acuerdo_doble", "cola_humana", "motivos_cola"],
+      "properties": {
+        "acuerdo_doble": {"type": "string", "enum": ["total", "parcial", "desacuerdo", "no_aplica"]},
+        "cola_humana": {"type": "boolean"},
+        "motivos_cola": {"type": "array", "items": {"type": "string", "enum": ["desacuerdo_clave", "homonimo_dudoso", "solo_fuentes_B", "confianza_baja", "ficha_publicable", "clase_revisar", "muestra_validacion"]}}
+      }
+    }
+  },
+  "$defs": {
+    "sector": {"type": "string", "enum": ["S01", "S02", "S03", "S04", "S05", "S06", "S07", "S08", "S09", "S10", "S11", "S12", "S13", "S14", "S15", "S16", "S17", "S18", "S19", "S20", "S21", "S22", "S23", "S24", "NC"]}
+  }
+}

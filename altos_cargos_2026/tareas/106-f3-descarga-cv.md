@@ -1,9 +1,10 @@
 modelo: sonnet
 salida: fase2/fuentes/cv/manifiesto_cv.csv
-estado: pendiente
+estado: hecha
 prioridad: 2
 comun: fase2
 agente: claude-p
+ejecutada: 2026-11-01 22:14
 ---
 Carpeta asignada: fase2/fuentes/cv/ (documentos a fase2/data/raw/cv/).
 Descarga los currículos oficiales de los altos cargos en activo:

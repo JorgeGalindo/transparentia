@@ -1,9 +1,10 @@
 modelo: sonnet
 salida: fase2/literatura/cribado.csv
-estado: pendiente
+estado: hecha
 prioridad: 1
 comun: fase2
 agente: claude-p
+ejecutada: 2026-11-01 21:54
 ---
 Carpeta asignada: fase2/literatura/ (PDF a fase2/data/raw/literatura/).
 Pasos L1–L2 de la pata de literatura (ARQUITECTURA.md §7). Pregunta: nombramientos políticos, patronazgo y pericia en

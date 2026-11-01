@@ -2,3 +2,5 @@ fuentes/
 work/
 tareas/logs/
 fase2/data/raw/
+fase2/db/*.duckdb
+fase2/db/*.duckdb.wal

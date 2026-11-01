@@ -1,0 +1,121 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "cv_extraccion.schema.json",
+  "title": "Extracción estructurada de un CV (CODEBOOK v0, secciones 2 y 4)",
+  "description": "Una salida por documento fuente y persona. Solo se extrae lo que dice el texto; lo que no consta va a null o 'no_consta'. Cada elemento lleva cita textual corta (≤300 caracteres) copiada del documento.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["persona", "fuente", "trayectoria", "formacion", "funcionario", "cargos_electos_mencionados", "cargos_partido_mencionados", "omisiones", "extractor"],
+  "properties": {
+    "persona": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["persona_id", "nombre_en_fuente", "anio_nacimiento"],
+      "properties": {
+        "persona_id": {"type": ["string", "null"], "description": "Id de la tabla persona, si ya existe."},
+        "nombre_en_fuente": {"type": "string"},
+        "anio_nacimiento": {"type": ["integer", "null"], "description": "Solo si el documento lo dice."}
+      }
+    },
+    "fuente": {"$ref": "#/$defs/fuente"},
+    "trayectoria": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "organizacion", "tipo_organizacion", "cargo", "nivel_responsabilidad", "sectores", "designacion_politica", "eventual_o_asesor_politico", "tamano_organizacion", "dedicacion", "fecha_inicio", "fecha_fin", "en_curso", "precision_fechas", "cita"],
+        "properties": {
+          "id": {"type": "string", "description": "t1, t2… en orden de aparición."},
+          "organizacion": {"type": "string"},
+          "tipo_organizacion": {"type": "string", "enum": ["AGE", "CCAA", "local", "empresa_publica", "organismo_publico", "regulador", "privada", "partido", "fundacion_de_partido", "sindicato", "organizacion_empresarial", "universidad", "centro_investigacion", "internacional_UE", "tercer_sector", "parlamento", "judicial", "fuerzas_armadas_o_seguridad", "medios", "otro"]},
+          "cargo": {"type": "string"},
+          "funcion_resumida": {"type": ["string", "null"], "description": "≤20 palabras, solo si el texto describe la función."},
+          "nivel_responsabilidad": {"type": "string", "enum": ["alta_direccion", "direccion_intermedia", "consejero", "tecnico", "docente_investigador", "electo", "asesor", "apoyo", "no_consta"], "description": "alta_direccion: comité de dirección, DG o superior, presidencia o dirección de entidad; direccion_intermedia: subdirector general, jefe de área o de departamento."},
+          "sectores": {"type": "array", "items": {"$ref": "#/$defs/sector"}, "description": "1 o 2 códigos: sector de la organización y, si es distinto, sector de la función (regla 2.3)."},
+          "designacion_politica": {"type": "string", "enum": ["si", "no", "no_consta"], "description": "si: cargo de libre designación por un órgano de gobierno (alto cargo, gabinete) o cargo electo."},
+          "eventual_o_asesor_politico": {"type": "boolean", "description": "Personal eventual, gabinete, asesor parlamentario o de grupo político."},
+          "tamano_organizacion": {"type": "string", "enum": ["<50", "50-249", "250-999", ">=1000", "no_consta"]},
+          "dedicacion": {"type": "string", "enum": ["completa", "parcial", "no_consta"]},
+          "fecha_inicio": {"type": ["string", "null"], "description": "AAAA, AAAA-MM o AAAA-MM-DD."},
+          "fecha_fin": {"type": ["string", "null"], "description": "AAAA, AAAA-MM o AAAA-MM-DD; null si en curso o no consta."},
+          "en_curso": {"type": "boolean"},
+          "precision_fechas": {"type": "string", "enum": ["dia", "mes", "anio", "sin_fecha"]},
+          "cita": {"type": "string"}
+        }
+      }
+    },
+    "formacion": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["nivel", "titulo", "campo_iscedf", "institucion", "pais", "anio_fin", "cita"],
+        "properties": {
+          "nivel": {"type": "string", "enum": ["diplomatura_o_grado", "licenciatura", "ingenieria_superior_o_arquitectura", "master_oficial", "mba", "titulo_propio_o_ejecutivo", "doctorado", "especialidad_sanitaria", "otro"]},
+          "titulo": {"type": "string"},
+          "campo_iscedf": {"type": ["string", "null"], "description": "Código ISCED-F 2013 de 4 dígitos (p. ej., 0311 Economía, 0421 Derecho)."},
+          "institucion": {"type": ["string", "null"]},
+          "pais": {"type": ["string", "null"]},
+          "anio_fin": {"type": ["integer", "null"]},
+          "cita": {"type": "string"}
+        }
+      }
+    },
+    "funcionario": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["cuerpo", "subgrupo", "administracion", "anio_ingreso", "situacion", "boe_url", "cita"],
+        "properties": {
+          "cuerpo": {"type": "string", "description": "Nombre literal del cuerpo, escala o carrera."},
+          "subgrupo": {"type": "string", "enum": ["A1", "A2", "C1", "C2", "oficial_FAS_o_GC", "carrera_judicial_fiscal_diplomatica", "no_consta"]},
+          "administracion": {"type": "string", "enum": ["AGE", "CCAA", "local", "UE", "otra"]},
+          "anio_ingreso": {"type": ["integer", "null"]},
+          "situacion": {"type": "string", "enum": ["activo", "servicios_especiales", "excedencia", "jubilado", "no_consta"]},
+          "boe_url": {"type": ["string", "null"]},
+          "cita": {"type": "string"}
+        }
+      }
+    },
+    "cargos_electos_mencionados": {"type": "array", "items": {"$ref": "#/$defs/mencion"}, "description": "Se pasan a la búsqueda de afiliación; aquí no se codifican."},
+    "cargos_partido_mencionados": {"type": "array", "items": {"$ref": "#/$defs/mencion"}},
+    "omisiones": {"type": "array", "items": {"type": "string"}, "description": "Huecos detectados: 'fechas incompletas', 'el CV empieza en 2012', etc."},
+    "extractor": {"$ref": "#/$defs/extractor"}
+  },
+  "$defs": {
+    "sector": {"type": "string", "enum": ["S01", "S02", "S03", "S04", "S05", "S06", "S07", "S08", "S09", "S10", "S11", "S12", "S13", "S14", "S15", "S16", "S17", "S18", "S19", "S20", "S21", "S22", "S23", "S24", "NC"]},
+    "fuente": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["url", "fecha_consulta", "tipo", "hash_documento"],
+      "properties": {
+        "url": {"type": "string"},
+        "fecha_consulta": {"type": "string", "description": "AAAA-MM-DD"},
+        "tipo": {"type": "string", "enum": ["transparencia_cv", "referencia_consejo_ministros", "boe", "web_entidad", "informe_gobierno_corporativo", "borme", "wikidata", "prensa", "otra"]},
+        "hash_documento": {"type": ["string", "null"], "description": "sha256 del documento guardado en el almacén bruto."}
+      }
+    },
+    "mencion": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["descripcion", "partido_literal", "fechas", "cita"],
+      "properties": {
+        "descripcion": {"type": "string"},
+        "partido_literal": {"type": ["string", "null"]},
+        "fechas": {"type": ["string", "null"]},
+        "cita": {"type": "string"}
+      }
+    },
+    "extractor": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["modelo", "version_prompt", "fecha"],
+      "properties": {
+        "modelo": {"type": "string"},
+        "version_prompt": {"type": "string"},
+        "fecha": {"type": "string"}
+      }
+    }
+  }
+}
