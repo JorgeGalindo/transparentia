@@ -17,8 +17,7 @@ marcadas como trabajo manual o de Chrome.
 - [x] **012 · Verificación muestral de noviembre**: 28 de 30 confirmados; corregidos la SGT de Defensa y Casa Árabe, ambas sin titular identificado. Se repite cada mes: `generar_tareas.py` la crea sola.
 - [ ] **Identificar a los titulares de la SGT de Defensa y de Casa Árabe** (Haiku, BOE).
 - [x] **001 · CERSA completado** (8 filas). Epicom sigue sin consejo publicado.
-- [x] **013–017 · Refresco de consejos** (Sonnet): casi todo confirmado y pocos cambios. Siguen como último dato disponible: SELAE, Hunosa, MAYASA, ICO, Cetarsa, COFIDES, Rodalies, EGS, ENSA y Acuamed. El siguiente paso es el BORME y las cuentas 2025: SELAE, Hunosa, MAYASA, Tragsa,
-      Cetarsa, Aena, COFIDES, ICO, Enusa, ENSA, Acuamed, SIEPSE, Correos, Ebro, Enagás, Rodalies, SEITT, EGS…
+- [x] **013–017 · Refresco de consejos** (Sonnet): casi todo confirmado y pocos cambios. Siguen como último dato disponible: SELAE, Hunosa, MAYASA, ICO, Cetarsa, COFIDES, Rodalies, EGS, ENSA y Acuamed. El siguiente paso es el BORME y las cuentas 2025.
 - [ ] **Revisar `data/seguimiento/boe_sin_encaje.csv`** tras cada vigía (hoy está vacío).
 - [x] **003**: Rogelio Llanes confirmado como delegado en la Comunitat Valenciana. La presidencia de SEITT sigue sin confirmar tras el relevo en la Secretaría General de Transporte Terrestre.
 - [ ] **Contraste de las cotizadas con la CNMV** (Chrome; la ficha pública no muestra el consejo). Alternativa: el IAGC
