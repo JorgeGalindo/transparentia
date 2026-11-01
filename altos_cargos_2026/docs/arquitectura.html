@@ -1,0 +1,727 @@
+<!DOCTYPE html>
+<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Arquitectura de la base de nombramientos</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@700;800&family=IBM+Plex+Sans:wght@400;600&family=IBM+Plex+Mono&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f6f6f3;--panel:#fff;--ink:#1a222b;--muted:#5d6874;--line:#dcdfda;--accent:#1d4e89;
+ --f-display:"Archivo","Helvetica Neue",Arial,sans-serif;--f-body:"IBM Plex Sans","Helvetica Neue",Arial,sans-serif;--f-mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;color-scheme:light}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--bg:#12171d;--panel:#1a2129;--ink:#e6e9ec;--muted:#9aa5b1;--line:#2b343e;--accent:#8ab8ee;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#12171d;--panel:#1a2129;--ink:#e6e9ec;--muted:#9aa5b1;--line:#2b343e;--accent:#8ab8ee;color-scheme:dark}
+*{box-sizing:border-box} html,body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.6 var(--f-body)}
+main{max-width:980px;margin:0 auto;padding:28px 18px 64px}
+h1{font:800 28px/1.15 var(--f-display);margin:0 0 6px;text-wrap:balance}
+h2{font:700 19px/1.25 var(--f-display);margin:36px 0 10px;color:var(--accent);text-wrap:balance}
+p,li{max-width:72ch} li{margin:3px 0} strong{font-weight:600}
+code{font:13.5px var(--f-mono);background:color-mix(in srgb,var(--accent) 10%,transparent);padding:1px 5px;border-radius:4px}
+pre{overflow-x:auto} .tw{overflow-x:auto;margin:10px 0;border:1px solid var(--line);border-radius:6px;background:var(--panel)}
+table{border-collapse:collapse;width:100%;font-size:14px} th,td{text-align:left;vertical-align:top;padding:7px 10px;border-bottom:1px solid var(--line)}
+th{font-size:12.5px;text-transform:uppercase;letter-spacing:.03em;color:var(--muted);font-weight:600} tr:last-child td{border-bottom:0}
+figure{margin:12px 0 4px;background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:12px;overflow-x:auto}
+figure svg{display:block;width:100%;min-width:760px;height:auto;color:var(--ink)}
+figcaption{font-size:14px;color:var(--muted);margin-top:8px;max-width:80ch}
+h1+p{color:var(--muted);font-size:14.5px}
+</style></head><body><main><h1>Arquitectura · Fase 2: ¿quién ocupa los puestos que deberían ser técnicos?</h1>
+<p>Versión 0 · 1/11/2026 · Documento de diseño: todavía no se ha ejecutado nada de lo que aquí se describe.
+Lo usan Claude, Codex y la cola de tareas por API como contexto común.</p>
+<h2>0. Objetivo</h2>
+<p><strong>Pregunta.</strong> En los puestos del ejecutivo y de las empresas públicas que, por norma o por función, deberían ocupar
+perfiles técnicos, ¿cuántos están ocupados por personas <strong>con afiliación política clara</strong> y <strong>sin experiencia
+relevante</strong> para el puesto?</p>
+<p><strong>Alcance.</strong> El análisis es descriptivo. Parte de la foto del 1/11/2026, que es la base ya construida, y sigue hacia
+delante: nombramientos, ceses, elecciones del 29/11 y el Gobierno siguiente. <strong>No se reconstruye el pasado</strong> en esta
+fase, aunque el modelo de datos lo permite más adelante.</p>
+<p><strong>Fuera del indicador:</strong> los asesores parlamentarios (Congreso y Senado) y el personal eventual. Si aparecen en un CV
+se registran, pero no cuentan como afiliación.</p>
+<h2>1. Decisiones de diseño que mandan</h2>
+<ol>
+<li><strong>Unidad de análisis: la ocupación</strong> (persona × puesto × periodo). Una persona puede ocupar varias sillas.</li>
+<li><strong>Clases de puesto, fijadas antes de mirar a las personas:</strong><ul>
+<li><strong>T-legal</strong>: subsecretarios, secretarios generales técnicos y directores generales. La Ley 40/2015 (arts. 63–66)
+ exige que sean funcionarios de carrera A1, salvo excepción en el real decreto de estructura.</li>
+<li><strong>T-empresa</strong>: primeros ejecutivos y consejeros de empresas públicas. Las directrices de la OCDE sobre empresas
+ públicas piden consejos profesionales.</li>
+<li><strong>T-regulador</strong>: presidencias y consejos de reguladores y agencias técnicas.</li>
+<li><strong>P (político por diseño)</strong>: secretarios de Estado, secretarios generales de libre designación, gabinetes,
+ delegados del Gobierno y comisionados. <strong>Es el grupo de referencia.</strong></li>
+</ul>
+</li>
+<li><strong>Estándar de evidencia.</strong> Cada hecho codificado lleva fuente (URL y fecha) y una cita textual. Sin evidencia no hay
+    código.<ul>
+<li>La afiliación se mide como <strong>«afiliación documentada»</strong>, una cota inferior, porque en España no hay registro
+ público de militancia.</li>
+<li>«No detectada» y «verificado que no tiene» son cosas distintas.</li>
+</ul>
+</li>
+<li><strong>Simetría.</strong> El mismo codebook se aplica a todos los partidos y se fija antes de codificar (preregistro ligero).
+    El seguimiento hacia delante permite comparar a este Gobierno con el siguiente: es la mejor defensa de la neutralidad
+    de EsadeEcPol.</li>
+<li><strong>Datos personales.</strong> La opinión política es categoría especial (RGPD, art. 9). Por eso:<ul>
+<li>Solo se usa información <strong>manifiestamente pública</strong>: cargos electos, candidaturas, cargos orgánicos y
+ declaraciones públicas.</li>
+<li>No se infiere militancia de indicios débiles.</li>
+<li>Se publica en agregado. Cualquier dato individual pasa antes por el delegado de protección de datos (DPO) de Esade.</li>
+</ul>
+</li>
+<li><strong>Hacia delante y automático.</strong> Cada nombramiento nuevo que detectan los vigías dispara, por cola, la búsqueda de su
+    CV, la extracción y la codificación.</li>
+</ol>
+<h2>2. Diagrama</h2>
+<figure><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1160 700" role="img" aria-label="Flujo de datos: fuentes oficiales y web pasan por ingesta, extracción y enlace de identidades a una base DuckDB; el enriquecimiento agéntico rellena huecos; la codificación produce descriptivos, panel y paquete de replicación; los vigías semanales alimentan la base hacia delante y la literatura alimenta el codebook" font-family="inherit" font-size="12" fill="currentColor">
+  <defs>
+    <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="currentColor"/></marker>
+    <marker id="ahb" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#2f7bd8"/></marker>
+  </defs>
+  <g font-size="11" opacity="0.7" letter-spacing="0.5">
+    <text x="16" y="24">1 · FUENTES</text>
+    <text x="252" y="24">2 · INGESTA</text>
+    <text x="464" y="24">3 · EXTRACCIÓN</text>
+    <text x="688" y="24">4 · BASE</text>
+    <text x="924" y="24">5 · CODIFICACIÓN Y SALIDAS</text>
+  </g>
+  <g fill="currentColor" fill-opacity="0.04" stroke="currentColor" stroke-opacity="0.45" stroke-width="1">
+    <rect x="16" y="40" width="196" height="196" rx="6"/>
+    <rect x="16" y="252" width="196" height="74" rx="6"/>
+    <rect x="16" y="342" width="196" height="74" rx="6"/>
+    <rect x="252" y="150" width="172" height="70" rx="6"/>
+    <rect x="252" y="256" width="172" height="70" rx="6"/>
+    <rect x="464" y="150" width="184" height="56" rx="6"/>
+    <rect x="464" y="222" width="184" height="64" rx="6"/>
+    <rect x="464" y="302" width="184" height="64" rx="6"/>
+    <rect x="688" y="40" width="196" height="380" rx="6"/>
+    <rect x="688" y="470" width="196" height="70" rx="6"/>
+    <rect x="924" y="40" width="200" height="110" rx="6"/>
+    <rect x="924" y="176" width="200" height="52" rx="6"/>
+    <rect x="924" y="246" width="200" height="52" rx="6"/>
+    <rect x="924" y="316" width="200" height="52" rx="6"/>
+    <rect x="16" y="582" width="1108" height="44" rx="6"/>
+    <rect x="16" y="640" width="1108" height="44" rx="6" stroke-dasharray="4 3"/>
+  </g>
+  <rect x="252" y="40" width="172" height="78" rx="6" fill="#2f7bd8" fill-opacity="0.08" stroke="#2f7bd8" stroke-width="1.5"/>
+  <g font-weight="600">
+    <text x="28" y="60">Oficiales accesibles</text>
+    <text x="28" y="272">Bloqueadas a scripts</text>
+    <text x="28" y="362">Web abierta</text>
+    <text x="264" y="60">Vigías semanales</text>
+    <text x="264" y="172">Cargadores y scrapers</text>
+    <text x="264" y="278">Almacén bruto</text>
+    <text x="476" y="174">Parsers deterministas</text>
+    <text x="476" y="244">Extracción LLM</text>
+    <text x="476" y="324">Enlace de identidades</text>
+    <text x="700" y="62">Base · DuckDB</text>
+    <text x="700" y="494">Enriquecimiento agéntico</text>
+    <text x="936" y="62">Codificación</text>
+    <text x="936" y="207">Descriptivos D1–D11</text>
+    <text x="936" y="277">Panel (artifact)</text>
+    <text x="936" y="347">Paquete de replicación</text>
+  </g>
+  <g opacity="0.85">
+    <text x="28" y="82">BOE · nombramientos</text>
+    <text x="28" y="100">BORME · consejos</text>
+    <text x="28" y="118">Moncloa · CV de nombrados</text>
+    <text x="28" y="136">Transparencia · CV, bienes</text>
+    <text x="28" y="154">Senado · Parl. Europeo</text>
+    <text x="28" y="172">Wikidata · cargos, partido</text>
+    <text x="28" y="190">Concejales (redsara)</text>
+    <text x="28" y="208">Transparentia · historial</text>
+    <text x="28" y="292">Congreso · Infoelectoral</text>
+    <text x="28" y="310">CNMV → vía Chrome</text>
+    <text x="28" y="382">webs corporativas</text>
+    <text x="28" y="400">prensa · partidos</text>
+    <text x="264" y="80">BOE · BORME · Consejo</text>
+    <text x="264" y="98">de Ministros · sin LLM</text>
+    <text x="264" y="192">Codex</text>
+    <text x="264" y="298">documentos + hash</text>
+    <text x="476" y="194">Codex</text>
+    <text x="476" y="264">Haiku 5.5 · batch</text>
+    <text x="476" y="344">+ cola de revisión</text>
+    <text x="700" y="92">persona</text>
+    <text x="700" y="126">posición · entidad</text>
+    <text x="700" y="160">ocupación · eventos</text>
+    <text x="700" y="194">trayectoria · formación</text>
+    <text x="700" y="228">funcionario (cuerpo)</text>
+    <text x="700" y="262">cargo electo</text>
+    <text x="700" y="296">candidatura</text>
+    <text x="700" y="330">cargo de partido</text>
+    <text x="700" y="364">evidencia (url + cita)</text>
+    <text x="700" y="514">Sonnet 5.5 + búsqueda web</text>
+    <text x="936" y="84">reglas + Sonnet 5.5</text>
+    <text x="936" y="104">doble codificación: Opus 5.5</text>
+    <text x="936" y="124">validación humana</text>
+  </g>
+  <g fill="none" stroke="currentColor" stroke-opacity="0.75" stroke-width="1.2" marker-end="url(#ah)">
+    <line x1="212" y1="185" x2="250" y2="185"/>
+    <polyline points="212,289 232,289 232,205 250,205"/>
+    <line x1="338" y1="220" x2="338" y2="254"/>
+    <polyline points="424,270 444,270 444,178 462,178"/>
+    <polyline points="424,300 452,300 452,254 462,254"/>
+    <polyline points="648,178 664,178 664,334 650,334"/>
+    <polyline points="556,366 556,394 686,394"/>
+    <line x1="884" y1="95" x2="922" y2="95"/>
+    <polyline points="1024,150 1024,164 910,164 910,342 922,342"/>
+    <line x1="910" y1="202" x2="922" y2="202"/>
+    <line x1="910" y1="272" x2="922" y2="272"/>
+    <line x1="750" y1="420" x2="750" y2="468"/>
+    <line x1="822" y1="470" x2="822" y2="422"/>
+    <polyline points="212,379 232,379 232,505 686,505"/>
+    <polyline points="1124,604 1144,604 1144,110 1126,110"/>
+  </g>
+  <line x1="648" y1="254" x2="664" y2="254" stroke="currentColor" stroke-opacity="0.75" stroke-width="1.2"/>
+  <g fill="none" stroke="#2f7bd8" stroke-width="1.6">
+    <line x1="212" y1="79" x2="250" y2="79" marker-end="url(#ahb)"/>
+    <line x1="424" y1="79" x2="686" y2="79" marker-end="url(#ahb)"/>
+  </g>
+  <g font-size="11">
+    <text x="556" y="72" text-anchor="middle" fill="#2f7bd8">eventos: nombramientos y ceses</text>
+    <text x="620" y="388" text-anchor="middle" opacity="0.8">personas enlazadas</text>
+    <text x="903" y="88" text-anchor="middle" opacity="0.8">perfiles</text>
+    <text x="744" y="450" text-anchor="end" opacity="0.8">huecos</text>
+    <text x="828" y="450" opacity="0.8">hechos + evidencia</text>
+    <text x="460" y="498" text-anchor="middle" opacity="0.8">lee y cita</text>
+    <text x="1140" y="575" text-anchor="end" opacity="0.8">codebook</text>
+  </g>
+  <text x="28" y="608" font-size="12"><tspan font-weight="600">LITERATURA</tspan>   OpenAlex · Dialnet   ▸   cribado (Haiku)   ▸   lectura completa con cita y página (Opus)   ▸   re-chequeo (Sonnet)   ▸   paquetes de replicación   ▸   CODEBOOK</text>
+  <text x="28" y="666" font-size="12"><tspan font-weight="600">ORQUESTACIÓN</tspan>   tareas/ (agente: codex · api · claude-p · chrome · jorge)   ·   actualizar.sh semanal   ·   Claude: diseño y QA   ·   Codex: código   ·   Jorge: decisiones</text>
+</svg>
+<figcaption>Flujo de la fase 2. En azul, el circuito hacia delante: los vigías semanales (BOE, BORME y Consejo de Ministros) meten nombramientos y ceses en la base sin pasar por un modelo. El enriquecimiento agéntico solo rellena huecos y siempre devuelve evidencia citada.</figcaption></figure>
+<h2>3. Quién hace qué</h2>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Pieza</th>
+<th>Quién</th>
+<th>Modelo</th>
+<th>Por qué</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Cargadores, scrapers, parsers, esquema DuckDB y tests</td>
+<td><strong>Codex</strong></td>
+<td>—</td>
+<td>Es trabajo de código: no gasta tokens de Claude</td>
+</tr>
+<tr>
+<td>Extracción estructurada de CV (texto limpio a JSON)</td>
+<td>API, Batch</td>
+<td><strong>Haiku 5.5</strong>; control del 10 % con Sonnet 5.5</td>
+<td>Barato y suficiente con esquema JSON</td>
+</tr>
+<tr>
+<td>Búsqueda abierta de afiliación o experiencia por persona</td>
+<td>API, agente</td>
+<td><strong>Sonnet 5.5</strong> + búsqueda y lectura web</td>
+<td>Haiku falló en los barridos abiertos (1/11)</td>
+</tr>
+<tr>
+<td>Clasificación de puestos y codificación de personas</td>
+<td>API, Batch</td>
+<td><strong>Sonnet 5.5</strong></td>
+<td>Requiere criterio; con Batch cuesta la mitad</td>
+</tr>
+<tr>
+<td>Doble codificación y desacuerdos</td>
+<td>API, Batch</td>
+<td><strong>Opus 5.5</strong></td>
+<td>Mide la fiabilidad del codificador</td>
+</tr>
+<tr>
+<td>Lectura completa de artículos (cita y página)</td>
+<td>API</td>
+<td><strong>Opus 5.5</strong>; re-chequeo con Sonnet 5.5</td>
+<td>Regla de la casa: lectura completa y verificada</td>
+</tr>
+<tr>
+<td>Arquitectura, codebook, QA, revisión de lo que entrega Codex y panel</td>
+<td><strong>Claude</strong> (esta sesión)</td>
+<td>—</td>
+<td>Mínimo: lee resúmenes y diffs, no datos en bruto</td>
+</tr>
+<tr>
+<td>Decisiones, validación muestral e interpretación</td>
+<td><strong>Jorge</strong> (o un asistente de investigación)</td>
+<td>—</td>
+<td>Unas 4–6 h de validación en la fase 5</td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>Coordinación.</strong>
+- Todo vive en el repo; Codex lee <code>AGENTS.md</code> y este documento.
+- Cada tarea de <code>tareas/</code> lleva un campo <code>agente:</code> y solo la ejecuta ese agente.
+- Se commitea a main con pull antes.
+- Claude revisa los commits de Codex antes de dar una fase por cerrada.
+- La clave de API va en el llavero y se lee en cada proceso; nunca en ficheros ni en el chat.</p>
+<h2>4. Modelo de datos (DuckDB, con exportación a CSV/Parquet)</h2>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Tabla</th>
+<th>Campos clave</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>persona</code></td>
+<td>id, nombre, apellidos, nombre normalizado, género, año de nacimiento (si es público), id de Wikidata</td>
+</tr>
+<tr>
+<td><code>posicion</code></td>
+<td>id, tipo (unidad AGE, organismo, silla de consejo, primer ejecutivo), nivel, ministerio, entidad, <strong>clase (T-legal / T-empresa / T-regulador / P)</strong>, requisito de funcionario A1, excepción en el RD, intensidad técnica de las funciones (0–3), sector, tipo de silla, retribución</td>
+</tr>
+<tr>
+<td><code>entidad</code></td>
+<td>id, forma jurídica, matriz, ministerio de adscripción, % público, cotizada, sector, empleados, presupuesto</td>
+</tr>
+<tr>
+<td><code>ocupacion</code></td>
+<td>persona, posición, inicio, fin, fuente del nombramiento (BOE, BORME o Consejo de Ministros), socio de coalición del ministerio, gobierno</td>
+</tr>
+<tr>
+<td><code>evento</code></td>
+<td>registro solo de altas: fecha, tipo (nombramiento, cese, alta o baja en consejo), persona, posición, fuente, aplicado o revisado</td>
+</tr>
+<tr>
+<td><code>trayectoria</code></td>
+<td>persona, organización, tipo (AGE, CCAA, local, empresa pública, privada, partido, sindicato, universidad, internacional), cargo, nivel de responsabilidad, sector, fechas, designación política (sí/no), evidencia</td>
+</tr>
+<tr>
+<td><code>formacion</code></td>
+<td>persona, nivel, título, campo (ISCED-F), institución</td>
+</tr>
+<tr>
+<td><code>funcionario</code></td>
+<td>persona, cuerpo, subgrupo, año de ingreso, BOE</td>
+</tr>
+<tr>
+<td><code>cargo_electo</code></td>
+<td>persona, institución (Congreso, Senado, Parlamento Europeo, parlamento autonómico, ayuntamiento, diputación o cabildo), partido, legislatura, fechas, fuente, calidad del cruce</td>
+</tr>
+<tr>
+<td><code>candidatura</code></td>
+<td>persona, elección, circunscripción, partido, puesto en la lista, si salió elegido</td>
+</tr>
+<tr>
+<td><code>cargo_partido</code></td>
+<td>persona, partido, órgano (ejecutiva federal, autonómica o local…), cargo, fechas, evidencia</td>
+</tr>
+<tr>
+<td><code>evidencia</code></td>
+<td>url, fecha de consulta, tipo de fuente, <strong>cita textual</strong>, extractor (script o modelo, versión y prompt), confianza, revisor</td>
+</tr>
+<tr>
+<td><code>codificacion</code></td>
+<td>persona × posición × versión del codebook: las variables de la sección 5, modelo codificador, acuerdo y validación humana</td>
+</tr>
+</tbody>
+</table></div>
+<h2>5. Variables (codebook v0, a fijar en la fase 0)</h2>
+<p><strong>Afiliación documentada</strong> (ordinal):</p>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Nivel</th>
+<th>Qué cuenta</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0</td>
+<td>Sin evidencia</td>
+</tr>
+<tr>
+<td>1</td>
+<td>Indicio débil: gabinete político, fundación de partido. No entra en el indicador principal</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Candidato en listas, sin salir elegido</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Cargo orgánico de partido o cargo electo local</td>
+</tr>
+<tr>
+<td>4</td>
+<td>Cargo electo autonómico, nacional o europeo, o miembro de un gobierno (ministro, consejero autonómico, alcalde)</td>
+</tr>
+</tbody>
+</table></div>
+<ul>
+<li>Se registra además el <strong>partido</strong> (PSOE/PSC, espacio Sumar, PP, Vox, nacionalistas…).</li>
+<li><strong>Indicador principal: nivel 3 o más.</strong> El nivel 2 o más, como robustez.</li>
+</ul>
+<p><strong>Experiencia relevante.</strong> Tres componentes:
+- (a) Años de experiencia en el <strong>sector del puesto</strong> antes del nombramiento.
+- (b) Experiencia directiva previa en una organización comparable.
+- (c) Credencial técnica: un cuerpo A1 relevante (Abogados del Estado, Técnicos Comerciales y Economistas del Estado,
+  Inspectores de Hacienda, Ingenieros de Caminos…) o formación de posgrado en el campo.</p>
+<p>«Sin experiencia relevante» = (a) menos de 3 años, sin (b) y sin (c). Como sensibilidad se prueban 0 y 5 años. La
+referencia normativa es la idoneidad que exige la Ley 3/2015 (conocimientos y experiencia).</p>
+<p><strong>Indicador clave, PPSE (perfil político sin experiencia relevante):</strong> afiliación de nivel 3 o más y sin experiencia
+relevante.</p>
+<p><strong>Tipología de perfil:</strong> técnico, político, híbrido o sin perfil reconocible. Es comparable con la de la literatura
+sobre secretarios de Estado (ver sección 7).</p>
+<p><strong>Otras variables:</strong> ministerio, socio de coalición, sector, tamaño de la entidad, si cotiza, tipo de silla, género,
+edad, fecha de nombramiento (ventana preelectoral), retribución, y meses desde el último cargo electo («aterrizaje»).</p>
+<h2>6. Qué testaríamos (descriptivos)</h2>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>#</th>
+<th>Pregunta</th>
+<th>Corte</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>D1</td>
+<td>% con afiliación documentada</td>
+<td>Clases T frente a P, con IC al 95 %</td>
+</tr>
+<tr>
+<td>D2</td>
+<td>% sin experiencia relevante</td>
+<td>Por clase</td>
+</tr>
+<tr>
+<td>D3</td>
+<td><strong>% PPSE (titular del informe)</strong></td>
+<td>Por clase; T-empresa frente a T-legal frente a P</td>
+</tr>
+<tr>
+<td>D4</td>
+<td>Heterogeneidad</td>
+<td>Ministerio, <strong>socio de coalición (PSOE o Sumar)</strong>, sector, tamaño de la empresa, cotizada o no, tipo de silla (presidente ejecutivo, dominical, independiente)</td>
+</tr>
+<tr>
+<td>D5</td>
+<td>Directores generales que no son funcionarios (excepciones del art. 66.2)</td>
+<td>Su perfil frente al de los DG funcionarios</td>
+</tr>
+<tr>
+<td>D6</td>
+<td>«Aterrizajes»: meses entre el fin de un cargo electo y el nombramiento</td>
+<td>Recolocación en 12 meses o menos, por partido</td>
+</tr>
+<tr>
+<td>D7</td>
+<td>Credenciales</td>
+<td>% de cuerpos de élite y de experiencia privada, por clase</td>
+</tr>
+<tr>
+<td>D8</td>
+<td>Género y edad</td>
+<td>Por perfil</td>
+</tr>
+<tr>
+<td>D9</td>
+<td>Retribución</td>
+<td>PPSE frente al resto (grupos retributivos de empresas públicas)</td>
+</tr>
+<tr>
+<td>D10</td>
+<td>Dinámica hacia delante</td>
+<td>(a) ¿son más políticos los nombramientos de la ventana preelectoral (sept.–nov. 2026)? (b) ¿se cesa antes a los perfiles políticos cuando cambia el Gobierno? (c) foto del nuevo Gobierno frente al saliente</td>
+</tr>
+<tr>
+<td>D11</td>
+<td>Validación externa</td>
+<td>Concordancia con el Dedómetro de Hay Derecho (SEPI) y con la tipología académica de secretarios de Estado</td>
+</tr>
+</tbody>
+</table></div>
+<p>Proporciones con intervalos de Wilson. Modelos lineales de probabilidad o logit de PPSE sobre la clase y controles,
+leídos como asociación descriptiva, no causal. Robustez a los umbrales y al nivel de evidencia.</p>
+<h2>7. Pata de literatura</h2>
+<p><strong>Protocolo</strong> (regla de la casa: lectura completa, cita y página por cada afirmación, re-chequeo independiente):
+1. Búsqueda en OpenAlex, Dialnet, RePEc y Dataverse/Zenodo/OSF, en español e inglés, centrada en 2015–2026, con los
+    clásicos.
+2. Cribado de resúmenes con Haiku.
+3. Lectura completa de 15–25 trabajos con Opus. Para cada uno: universo, cómo miden afiliación y pericia, fuentes,
+    fiabilidad, resultados y paquete de replicación.
+4. Re-chequeo independiente de cada cita con Sonnet.
+5. Descarga y evaluación de los paquetes de replicación: ¿se pueden fusionar con nuestra base o ampliar?
+6. Matriz y nota de 2 páginas: qué tomar prestado para el codebook y qué hueco cubre este trabajo.</p>
+<p><strong>Semillas que han salido en el barrido del 1/11</strong> (aún sin leer):
+- Gómez y Verge (2012), «Party Patronage in Spain: Extensive But Not Pervasive Use of Appointments as a Tool of Party
+  Government», capítulo del libro de Kopecký, Mair y Spirova (OUP).
+- «Politicians, experts or both? Democratic delegation and junior ministers in Spain», <em>Acta Politica</em> (2016):
+  secretarios de Estado 1977–2010, con tipología de políticos, expertos e híbridos.
+- Fundación Hay Derecho: <em>Estudio sobre la meritocracia en la designación…</em> (2020) y las ediciones del <em>Dedómetro</em>
+  (la de SEPI es de mayo de 2026).
+- Staronova y Rybář (2021), sobre el efecto del cambio de ministro en los altos funcionarios (Eslovaquia).
+- Van Dorp (2023), sobre el nombramiento de secretarios generales (Países Bajos).
+- Toral, «How Patronage Delivers» (Brasil).</p>
+<p><strong>De memoria, a verificar antes de citarlas:</strong>
+- Kopecký, Mair y Spirova (2012), la encuesta a expertos sobre patronazgo.
+- Ennser-Jedenastik (2014), sobre la supervivencia de los directivos de empresas públicas austriacas.
+- Colonnelli, Prem y Teso (2020, <em>AER</em>), con paquete de la AEA.
+- Toral (2024), sobre la rotación de los gobiernos salientes (lame duck).
+- Cuñat y Garicano (2010), sobre la gobernanza y el capital humano de las cajas.
+- Dahlström y Lapuente (2017).</p>
+<p><strong>Primer hallazgo:</strong> no aparece ningún estudio académico español reciente con paquete de replicación sobre la
+politización de directivos y consejos de empresas públicas. Lo que hay son informes de think tanks y prensa (<em>The
+Objective</em>, <em>El Debate</em>) sin metodología publicada. Ese es el hueco que cubriría este trabajo.</p>
+<h2>8. Fases, días y coste</h2>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Fase</th>
+<th>Qué sale</th>
+<th>Días</th>
+<th>Quién</th>
+<th>Coste API</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>F0 Codebook y decisiones</td>
+<td><code>CODEBOOK.md</code> v0, clases de puesto, umbrales, consulta al DPO</td>
+<td>1–2</td>
+<td>Claude + Jorge (1 h)</td>
+<td>—</td>
+</tr>
+<tr>
+<td>L Literatura (en paralelo)</td>
+<td>Matriz, nota, paquetes de replicación</td>
+<td>3–4</td>
+<td>API + QA de Claude</td>
+<td>10–20 $</td>
+</tr>
+<tr>
+<td>F1 Base relacional</td>
+<td>DuckDB, foto inicial migrada, identidades únicas, atributos de las entidades</td>
+<td>2</td>
+<td>Codex</td>
+<td>—</td>
+</tr>
+<tr>
+<td>F2 Cargos electos y candidaturas</td>
+<td>Senado, Congreso (Chrome o Wikidata), Parlamento Europeo, parlamentos autonómicos (Wikidata + Transparentia), concejales, Infoelectoral (Chrome); cruces y cola de revisión</td>
+<td>3–4</td>
+<td>Codex (+ Chrome)</td>
+<td>—</td>
+</tr>
+<tr>
+<td>F3 Trayectorias (en paralelo a F2)</td>
+<td>CV de Transparencia (~700), CV de las referencias del Consejo de Ministros, bios de cotizadas, cuerpo de funcionario por el BOE</td>
+<td>2–3</td>
+<td>Codex + API Batch</td>
+<td>3–10 $</td>
+</tr>
+<tr>
+<td>F4 Enriquecimiento agéntico</td>
+<td>Partido, candidaturas y huecos de experiencia de ~1.400 personas, con evidencia</td>
+<td>2–3</td>
+<td>API (Sonnet + búsqueda)</td>
+<td>190–270 $</td>
+</tr>
+<tr>
+<td>F5 Codificación y validación</td>
+<td>Clases de puesto, experiencia, afiliación, PPSE; doble codificación; validación de 100–150 casos; kappa</td>
+<td>3–4</td>
+<td>API + Jorge (4–6 h)</td>
+<td>30–40 $</td>
+</tr>
+<tr>
+<td>F6 Descriptivos v1 + panel v2</td>
+<td>Tablas y gráficos D1–D11, esquema del brief</td>
+<td>2</td>
+<td>Claude/Codex</td>
+<td>—</td>
+</tr>
+<tr>
+<td>F7 Sistema hacia delante</td>
+<td>Vigías BORME y Consejo de Ministros, disparadores de enriquecimiento, foto S1 tras la investidura</td>
+<td>1–2, luego continuo</td>
+<td>Codex + cola</td>
+<td>15–30 $/mes</td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>Tiempo:</strong> el camino crítico es F0 → F1 → (F2 ∥ F3) → F4 → F5 → F6, de <strong>13 a 16 días laborables</strong>. Si se arranca el
+2/11, los descriptivos v1 estarían <strong>hacia el 20–27 de noviembre</strong>, en torno a las elecciones. El momento de publicarlos
+lo decides tú.</p>
+<p><strong>Coste API (clave de pago):</strong>
+- Arranque: <strong>unos 300–400 $</strong>, con techo de 500 $ si hay que repetir pasadas.
+- La mayor partida es la búsqueda agéntica: unos 70.000 tokens por persona, buena parte en caché; Sonnet 5.5 cuesta
+  2 $ de entrada y 10 $ de salida por millón, y la búsqueda web 10 $ por cada 1.000.
+- Mantenimiento: <strong>15–30 $ al mes</strong>. Tras el cambio de Gobierno, un pico de <strong>100–200 $</strong> por 300–500 nombramientos
+  nuevos.
+- Codex corre con tu plan de OpenAI. Esta sesión de Claude solo orquesta.</p>
+<p><strong>Precios</strong> (verificados el 1/11/2026 en la página oficial de precios), por millón de tokens de entrada / salida:</p>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Modelo</th>
+<th>Entrada / salida</th>
+<th>Lectura de caché</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Haiku 5.5</td>
+<td>0,10 $ / 0,50 $</td>
+<td>0,01 $</td>
+</tr>
+<tr>
+<td>Sonnet 5.5</td>
+<td>2 $ / 10 $</td>
+<td>0,10 $</td>
+</tr>
+<tr>
+<td>Opus 5.5</td>
+<td>4 $ / 20 $</td>
+<td>0,20 $</td>
+</tr>
+</tbody>
+</table></div>
+<p>La Batch API tiene un 50 % de descuento y la búsqueda web cuesta 10 $ por cada 1.000 búsquedas.</p>
+<h2>9. Fuentes: estado de acceso (comprobado el 1/11/2026)</h2>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Fuente</th>
+<th>Para qué</th>
+<th>Acceso</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>BOE, API de sumarios</td>
+<td>Nombramientos y ceses (el vigía ya funciona)</td>
+<td>200</td>
+</tr>
+<tr>
+<td>BORME, API</td>
+<td>Altas y bajas en consejos de sociedades estatales</td>
+<td>200</td>
+</tr>
+<tr>
+<td>Moncloa, referencias del Consejo de Ministros</td>
+<td>CV de los nombrados</td>
+<td>200</td>
+</tr>
+<tr>
+<td>Transparencia: CV, declaraciones de bienes y actividades</td>
+<td>Trayectoria y actividad previa</td>
+<td>200</td>
+</tr>
+<tr>
+<td>Senado, datos abiertos</td>
+<td>Senadores de todas las legislaturas</td>
+<td>200</td>
+</tr>
+<tr>
+<td>Parlamento Europeo</td>
+<td>Eurodiputados</td>
+<td>200</td>
+</tr>
+<tr>
+<td>Wikidata (SPARQL)</td>
+<td>Cargos ocupados y partido</td>
+<td>200</td>
+</tr>
+<tr>
+<td>Concejales (redsara)</td>
+<td>Cargos electos locales (buscador por nombre)</td>
+<td>200</td>
+</tr>
+<tr>
+<td>Transparentia (Newtral, en el repo)</td>
+<td>Historial de cargos electos (los titulares actuales están desfasados)</td>
+<td>local</td>
+</tr>
+<tr>
+<td>Congreso, datos abiertos</td>
+<td>Diputados de todas las legislaturas</td>
+<td><strong>403 a scripts</strong>: descarga manual por Chrome o Wikidata</td>
+</tr>
+<tr>
+<td>Infoelectoral (Interior)</td>
+<td>Candidaturas</td>
+<td><strong>403</strong>: descarga manual por Chrome</td>
+</tr>
+<tr>
+<td>CNMV</td>
+<td>Consejeros de cotizadas</td>
+<td><strong>403</strong>: IAGC en PDF desde la web de cada cotizada</td>
+</tr>
+<tr>
+<td>Parlamentos autonómicos</td>
+<td>Diputados autonómicos</td>
+<td>17 webs distintas; primero Wikidata y Transparentia</td>
+</tr>
+<tr>
+<td>OpenAlex, Dialnet, Dataverse</td>
+<td>Literatura y paquetes</td>
+<td>200</td>
+</tr>
+</tbody>
+</table></div>
+<p>Regla fija: <strong>no se falsean cabeceras</strong>. Lo que bloquea se baja una vez desde Chrome o se busca por otra vía.</p>
+<h2>10. Riesgos y salvaguardas</h2>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Riesgo</th>
+<th>Salvaguarda</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>No hay registro de militancia</td>
+<td>Medir «afiliación documentada» como cota inferior y separar «no detectada» de «sin afiliación»</td>
+</tr>
+<tr>
+<td>Homónimos</td>
+<td>Cruce con contexto (partido, territorio, fechas) y cola de revisión para casos dudosos</td>
+</tr>
+<tr>
+<td>Los CV omiten lo partidista</td>
+<td>Triangular con registros electorales, prensa y Wikidata</td>
+</tr>
+<tr>
+<td>Sesgo de disponibilidad (de quien tuvo cargo electo hay más información)</td>
+<td>Reportarlo; la búsqueda agéntica es igual para todos</td>
+</tr>
+<tr>
+<td>El LLM codifica mal</td>
+<td>Esquema cerrado, cita obligatoria, doble codificación y validación humana (objetivo: kappa ≥ 0,7)</td>
+</tr>
+<tr>
+<td>RGPD art. 9</td>
+<td>Solo hechos manifiestamente públicos, agregados y revisión del DPO</td>
+</tr>
+<tr>
+<td>Lectura partidista</td>
+<td>Codebook fijado antes de codificar, simetría y comparación entre gobiernos</td>
+</tr>
+<tr>
+<td>Webs bloqueadas</td>
+<td>Chrome o alternativas, nunca cabeceras falsas</td>
+</tr>
+</tbody>
+</table></div>
+<h2>11. Encaje con lo que ya hay</h2>
+<ul>
+<li>La base del 1/11 (351 unidades, 371 otros altos cargos, 106 entidades y 891 consejeros) es la <strong>foto S0</strong>.</li>
+<li>El <strong>vigía del BOE</strong> pasa a alimentar la tabla <code>evento</code>. Se le añaden BORME y Consejo de Ministros.</li>
+<li>La <strong>cola <code>tareas/</code></strong> recibe el campo <code>agente:</code> y nuevos tipos de tarea (<code>enriquecer</code>, <code>codificar</code>, <code>literatura</code>).</li>
+<li>El <strong>panel</strong> gana pestañas: perfiles, PPSE por clase y evolución.</li>
+</ul>
+<h2>12. Decisiones que necesito de ti</h2>
+<ol>
+<li><strong>Sillas dominicales ocupadas por funcionarios de ministerios.</strong> Son un 40 % aprox. de las sillas de empresas
+    públicas. ¿Van aparte? <em>Propuesta: sí, como grupo propio.</em></li>
+<li><strong>Umbral de experiencia.</strong> <em>Propuesta: 3 años en el sector, o credencial técnica, o dirección comparable; sensibilidad
+    con 0 y 5 años.</em></li>
+<li><strong>Evidencia mínima de afiliación para el indicador principal.</strong> <em>Propuesta: nivel 3 o más; las candidaturas, solo en
+    la robustez.</em></li>
+<li><strong>Publicación.</strong> ¿Solo agregados, o también fichas individuales? Antes, consulta al DPO de Esade.</li>
+<li><strong>Calendario.</strong> ¿Descriptivos v1 antes del 29/11 (foto de fin de legislatura) o después?</li>
+<li><strong>Embajadores políticos y delegados del Gobierno.</strong> ¿Entran en el núcleo o van como módulo aparte? <em>Propuesta:
+    módulo aparte.</em></li>
+<li><strong>Clave de API.</strong> Que no pase por el chat: guárdala tú en el llavero desde tu Terminal con
+    <code>security add-generic-password -a "$USER" -s anthropic-api-key-pago -w</code> (te pedirá la clave sin mostrarla).</li>
+</ol></main></body></html>

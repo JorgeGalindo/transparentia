@@ -4,6 +4,8 @@ Base construida el 1 de noviembre de 2026. Complementa el scraping de Transparen
 del repo. Ese scraping tiene muy desfasado quién ocupa cada cargo de la AGE (Lucas en Vivienda, Pingarrón en
 Universidades, Bar Cendón en Educación…), así que aquí no se usa para fijar titulares.
 
+**Fase 2 (en diseño):** la base de politización de los puestos técnicos (afiliación documentada y experiencia relevante) está en [`ARQUITECTURA.md`](ARQUITECTURA.md).
+
 **Aviso de vigencia.** Las elecciones generales están convocadas para el 29/11/2026. A partir del 30/11 el
 Gobierno estará en funciones y habrá ceses y nombramientos: la foto caduca rápido.
 
