@@ -1,9 +1,9 @@
 """Une los CSV de consejos (bloques + jobs API) y enlaza consejeros con la tabla de altos cargos."""
 import pandas as pd, glob, re, unicodedata
 H="empresa,forma_juridica,adscripcion_o_matriz,participacion_publica_pct,cargo,nombre,primer_ejecutivo,tipo_consejero,otro_cargo_publico,fuente_url,fecha_dato,nota".split(",")
-BLOQ={'bloque1':'SEPI mayoritarias','bloque2':'SEPI minoritarias + Aena','bloque3':'Transportes','bloque4':'Financieras/económicas/digitales','bloque5':'Resto','api_A':'Transportes','api_B':'Huecos varios','api_C':'Barrido cobertura (solo primer ejecutivo)','api_D':'Huecos varios'}
+BLOQ={'bloque1':'SEPI mayoritarias','bloque2':'SEPI minoritarias + Aena','bloque3':'Transportes','bloque4':'Financieras/económicas/digitales','bloque5':'Resto','api_A':'Transportes','api_B':'Huecos varios','api_C':'Barrido cobertura (solo primer ejecutivo)','api_D':'Huecos varios','tarea_refresco':'Refresco (cola API)','tarea_completar':'Completado (cola API)'}
 fr=[]
-for f in sorted(glob.glob('empresas/bloque*.csv'))+sorted(glob.glob('empresas/api_*.csv')):
+for f in sorted(glob.glob('empresas/bloque*.csv'))+sorted(glob.glob('empresas/api_*.csv'))+sorted(glob.glob('empresas/tarea_completar*.csv'))+sorted(glob.glob('empresas/tarea_refresco*.csv')):
     d=pd.read_csv(f,dtype=str).fillna('')
     miss=[c for c in H if c not in d.columns]
     if miss: print('AVISO columnas',f,miss); [d.__setitem__(c,'') for c in miss]
@@ -13,6 +13,13 @@ e=pd.concat(fr,ignore_index=True)
 ALIAS={'Hispasat, S.A.':'Hispasat','Loterías y Apuestas del Estado (SELAE) S.M.E., S.A.':'SELAE (Sociedad Estatal Loterías y Apuestas del Estado, S.M.E., S.A.)'}
 e['empresa']=e.empresa.str.strip().replace(ALIAS)
 e=e[e.nombre.str.strip()!='']
+# Un fichero de refresco (tarea_refresco_*) sustituye el consejo entero de las entidades que trae
+order=list(dict.fromkeys(e.fichero_origen))
+for i,f in enumerate(order):
+    if not f.startswith('tarea_refresco'): continue
+    ents=set(e[e.fichero_origen==f].empresa)
+    prev=e.fichero_origen.isin(order[:i]) & e.empresa.isin(ents)
+    if prev.any(): print(f'refresco {f}: sustituye {prev.sum()} filas previas'); e=e[~prev]
 def nz(s): return ' '.join(w for w in re.sub(r'[^a-z ]',' ',unicodedata.normalize('NFKD',str(s)).encode('ascii','ignore').decode().lower()).split() if w not in ('de','del','la','y','las','los'))
 # dedupe: same empresa+persona+cargo
 e['_k']=e.empresa.map(nz)+'|'+e.nombre.map(lambda n: ' '.join(sorted(nz(re.sub(r'\(.*?\)','',n)).split())))
@@ -35,6 +42,20 @@ def link(n):
         if min(len(t),len(s))>=3 and (t<=s or s<=t): return ' | '.join(v)+' [match parcial: nombre contenido]'
     return ''
 e['alto_cargo_AGE_actual']=e.nombre.map(link)
+def fecha(s):
+    m=re.search(r'(20\d\d)-(\d\d)(?:-(\d\d))?',s) or None
+    if m: return f"{m.group(1)}-{m.group(2)}-{m.group(3) or '01'}"
+    m=re.search(r'(\d{1,2})[/-](\d{1,2})[/-](20\d\d)',s)
+    if m: return f"{m.group(3)}-{int(m.group(2)):02d}-{int(m.group(1)):02d}"
+    m=re.search(r'(20\d\d)',s)
+    return f"{m.group(1)}-01-01" if m else ''
+e['fecha_dato_iso']=e.fecha_dato.map(fecha)
+def estado(n):
+    n=nz(n)
+    if 'actual verificado' in n: return 'actual verificado'
+    if 'ultimo dato disponible' in n: return 'ultimo dato disponible'
+    return 'sin marcar'
+e['estado_dato']=e.nota.map(estado)
 e=e.drop(columns='_k')
 e.to_csv('empresas_publicas_consejos.csv',index=False)
 print('filas',len(e),'empresas',e.empresa.nunique(),'personas',e.nombre.map(nz).nunique())

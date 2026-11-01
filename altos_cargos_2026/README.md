@@ -120,16 +120,58 @@ fuera de esta lista. Habría que contrastarla con el inventario de entes del sec
 - Navantia: 2 vacantes en el consejo.
 - Algunos vocales de ICEX e IDAE aparecen con nombres de ministerio antiguos, señal de que pueden estar desfasados.
 
+## Sistema de trabajo (seguir avanzando por API)
+
+Los pasos pendientes están en [`NEXT_STEPS.md`](NEXT_STEPS.md). El panel de seguimiento es `panel/index.html` y se
+publica como artifact privado de Claude.
+
+```
+              ┌─────────────────────┐   sin LLM
+  BOE (API) ─▶│ scripts/boe_vigia.py │──▶ data/seguimiento/boe_cambios.csv ─┐
+              └─────────────────────┘                                      │
+              ┌──────────────────────────┐ sin LLM                          ▼
+  data/*.csv ▶│ scripts/generar_tareas.py │──▶ tareas/NNN-*.md      scripts/build.sh ─▶ data/*.csv ─▶ scripts/panel.py ─▶ panel/index.html
+              └──────────────────────────┘        │                       ▲
+                                                  ▼                       │
+                                  scripts/cola.py (claude -p, token del llavero)
+                                  ─▶ data/consejos_por_bloque/tarea_*.csv, data/verificacion/*
+```
+
+- **`scripts/actualizar.sh`** hace la rutina entera: vigía, genera tareas, cola, build y panel. Usa `--sin-cola` para
+  pasar solo lo que no gasta modelo. Frecuencia: semanal, y diaria en las semanas de cambio de Gobierno.
+- **Vigía del BOE** (`boe_vigia.py` + `aplicar_boe.py`, sin LLM):
+  - Lee los sumarios diarios, sección II.A, y extrae los reales decretos de nombramiento y cese de altos cargos.
+  - Los aplica en orden: un nombramiento cambia el titular y un cese deja la unidad en «(vacante tras cese BOE)».
+  - Lo que no encaja con ninguna unidad va a `data/seguimiento/boe_sin_encaje.csv`, para revisarlo a mano.
+- **Cola de tareas** (`tareas/`):
+  - Un fichero por tarea, con su cabecera (`modelo`, `salida`, `estado`, `prioridad`) y el encargo. A todas se les
+    antepone `tareas/_comun.md` con las reglas: fuentes vivas, no falsear cabeceras y formato CSV.
+  - `python3 scripts/cola.py` muestra el estado y `python3 scripts/cola.py run --max 3` ejecuta las pendientes en
+    paralelo, cada una con `claude -p --model <modelo>` y el token OAuth del llavero (solo en el proceso hijo).
+  - Los logs quedan en `tareas/logs/`.
+  - Modelo según la tarea:
+    - **Haiku:** comprobaciones puntuales.
+    - **Sonnet:** investigar consejos y verificar con el BOE.
+    - **Opus:** reservado para rehacer la estructura tras el cambio de Gobierno, si hiciera falta.
+    - Los barridos abiertos con Haiku dieron mal resultado: van con Sonnet.
+- **Cómo entra lo que devuelve la cola:**
+  - `tarea_completar_*.csv` se suma a lo que hay; si una persona aparece repetida, gana la fila más reciente.
+  - `tarea_refresco_*.csv` sustituye entero el consejo de las entidades que trae.
+- **`generar_tareas.py`** crea tareas solo:
+  - Refresco de consejos con datos anteriores al corte (por defecto, 150 días; `--corte AAAA-MM-DD`).
+  - La verificación muestral del mes: 30 titulares al azar, contrastados con el BOE.
+  - No duplica tareas pendientes.
+
 ## Reproducir
 
 ```bash
 cd altos_cargos_2026
 ./scripts/descargar_fuentes.sh      # organigramas, lista de currículos y Agenda en ./fuentes (no versionado)
-PY=python3 ./scripts/build.sh       # requiere pandas, openpyxl y pdftotext
+./scripts/build.sh                  # usa uv (pandas, openpyxl) y pdftotext; o PY=<python con pandas>
 ```
 
 `build.sh` reconstruye las tres tablas de `data/` a partir de las fuentes, de `data/verificacion/` y de
 `data/consejos_por_bloque/`.
 
-Los consejos los recogieron agentes de investigación; los encargos están en `scripts/job*.txt` y se lanzan con
-`scripts/run_agent.sh`. Usan `claude -p` con el token del llavero, que no se guarda en ningún fichero.
+La primera recogida de consejos la hicieron agentes de investigación (encargos en `scripts/job*.txt` y
+`scripts/run_agent.sh`). Lo que viene después pasa por la cola de `tareas/`.

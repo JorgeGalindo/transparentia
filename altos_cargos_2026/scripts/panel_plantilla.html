@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Seguimiento altos cargos del Estado</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;700;800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* Layout: cabecera con estado + fila de cifras, luego bloques de trabajo (ministerios, BOE, consejos, cola, buscador) en rejilla de dos columnas que colapsa a una */
+:root{
+  --bg:#f4f5f2; --panel:#ffffff; --ink:#18212b; --muted:#5c6773; --line:#dde1dc;
+  --accent:#1d4e89; --accent-soft:#e3ebf5;
+  --ok:#2f7d4f; --warn:#b26b00; --bad:#b3261e; --ok-bg:#e4f2e9; --warn-bg:#fbf0dc; --bad-bg:#f9e3e1;
+  --f-display:"Archivo", "Helvetica Neue", Arial, sans-serif; --f-body:"IBM Plex Sans", "Helvetica Neue", Arial, sans-serif; --f-mono:"IBM Plex Mono", ui-monospace, Menlo, monospace;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#12171d; --panel:#1a2129; --ink:#e6e9ec; --muted:#9aa5b1; --line:#2b343e; --accent:#7fb0ea; --accent-soft:#1e2d40;
+  --ok:#6cc08f; --warn:#e6a64a; --bad:#f08a80; --ok-bg:#183326; --warn-bg:#352a14; --bad-bg:#3a1d1b; color-scheme:dark;}}
+:root[data-theme="dark"]{
+  --bg:#12171d; --panel:#1a2129; --ink:#e6e9ec; --muted:#9aa5b1; --line:#2b343e; --accent:#7fb0ea; --accent-soft:#1e2d40;
+  --ok:#6cc08f; --warn:#e6a64a; --bad:#f08a80; --ok-bg:#183326; --warn-bg:#352a14; --bad-bg:#3a1d1b; color-scheme:dark;}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 var(--f-body)}
+.wrap{max-width:1240px;margin:0 auto;padding:24px 20px 60px;display:grid;gap:20px}
+header{display:grid;gap:6px}
+h1{font:800 26px/1.15 var(--f-display);margin:0;letter-spacing:-.01em;text-wrap:balance}
+h2{font:700 16px/1.2 var(--f-display);margin:0 0 10px;text-transform:uppercase;letter-spacing:.04em;color:var(--accent)}
+.sub{color:var(--muted);font-size:14px}
+.alert{display:block;background:var(--warn-bg);color:var(--ink);border-left:4px solid var(--warn);padding:8px 12px;border-radius:4px;font-size:14px}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
+.kpi{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:12px 14px}
+.kpi b{display:block;font:700 26px/1.1 var(--f-display);font-variant-numeric:tabular-nums}
+.kpi span{color:var(--muted);font-size:13px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+@media (max-width:900px){.grid{grid-template-columns:1fr}}
+section{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:16px;min-width:0}
+.scroll{overflow:auto;max-height:440px}
+table{border-collapse:collapse;width:100%;font-size:13.5px}
+th,td{text-align:left;padding:6px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+th{position:sticky;top:0;background:var(--panel);font-weight:600;color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.03em}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums;font-family:var(--f-mono);font-size:13px}
+.chip{display:inline-block;padding:1px 8px;border-radius:10px;font-size:12px;font-weight:600;white-space:nowrap}
+.ok{background:var(--ok-bg);color:var(--ok)} .warn{background:var(--warn-bg);color:var(--warn)} .bad{background:var(--bad-bg);color:var(--bad)} .neu{background:var(--accent-soft);color:var(--accent)}
+.bar{display:flex;height:8px;border-radius:4px;overflow:hidden;min-width:90px;background:var(--line)}
+.bar i{display:block;height:100%}
+.mono{font-family:var(--f-mono);font-size:12.5px}
+input[type=search]{width:100%;padding:10px 12px;font:15px var(--f-body);border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--ink)}
+input[type=search]:focus,select:focus{outline:2px solid var(--accent);outline-offset:1px}
+.res{display:grid;gap:8px;margin-top:10px}
+.p{border:1px solid var(--line);border-radius:6px;padding:8px 10px}
+.p b{font-weight:600} .p ul{margin:4px 0 0;padding-left:18px;color:var(--muted);font-size:13px}
+.p .lab{font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:var(--accent);font-weight:600;margin-top:4px}
+.full{grid-column:1/-1}
+.filters{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px}
+select{padding:6px 8px;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--ink);font:13px var(--f-body)}
+.legend{display:flex;gap:12px;flex-wrap:wrap;font-size:12px;color:var(--muted);margin-bottom:8px}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:4px;vertical-align:-1px}
+@media (prefers-reduced-motion: reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <h1>Altos cargos del Estado y consejos de empresas públicas</h1>
+  <div class="sub" id="meta"></div>
+  <div class="alert" id="alerta"></div>
+</header>
+<div class="kpis" id="kpis"></div>
+<div class="grid">
+  <section>
+    <h2>Altos cargos por ministerio</h2>
+    <div class="legend"><span><i style="background:var(--accent)"></i>lista oficial de CV</span><span><i style="background:var(--ok)"></i>verificado en BOE</span><span><i style="background:var(--warn)"></i>cambio detectado por el vigía BOE</span><span><i style="background:var(--bad)"></i>vacante / sin titular</span></div>
+    <div class="scroll"><table id="tmin"></table></div>
+  </section>
+  <section>
+    <h2>Movimientos en el BOE (nombramientos y ceses)</h2>
+    <div class="scroll"><table id="tboe"></table></div>
+  </section>
+  <section class="full">
+    <h2>Consejos de administración: lo actualizado que está cada dato</h2>
+    <div class="filters">
+      <label for="fbloque" class="sub">Bloque</label><select id="fbloque"></select>
+      <label for="ffresc" class="sub">Estado</label><select id="ffresc"><option value="">todos</option><option value="bad">antes de 2026</option><option value="warn">ene–ago 2026</option><option value="ok">desde sept. 2026</option></select>
+    </div>
+    <div class="scroll"><table id="tent"></table></div>
+  </section>
+  <section>
+    <h2>Cola de tareas por API</h2>
+    <div class="scroll"><table id="ttar"></table></div>
+  </section>
+  <section>
+    <h2>Personas con más consejos</h2>
+    <div class="scroll"><table id="ttop"></table></div>
+  </section>
+  <section class="full">
+    <h2>Buscar persona</h2>
+    <label for="q" class="sub">Nombre o apellido: cruza cargos en la Administración y sillas en consejos</label>
+    <input type="search" id="q" placeholder="p. ej. Gualda, Valcarce, Santano">
+    <div class="res" id="res"></div>
+  </section>
+</div>
+</div>
+<script>
+const DATA=/*__DATA__*/null;
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const fd=s=>s&&s.length>=8?(s.includes('-')?s.slice(8,10)+'/'+s.slice(5,7)+'/'+s.slice(0,4):s.slice(6,8)+'/'+s.slice(4,6)+'/'+s.slice(0,4)):'—';
+const K=DATA.k;
+const dias=Math.ceil((new Date('2026-11-29')-new Date())/864e5);
+$('#meta').textContent=`Generado ${K.generado} · BOE revisado hasta ${fd(K.boe_hasta)} · fuentes: organigramas del Portal de Transparencia, lista oficial de CV de altos cargos, Agenda de la Moncloa, BOE y webs corporativas`;
+$('#alerta').innerHTML=dias>0?`<b>Elecciones generales el 29/11/2026</b> (en ${dias} días). Desde el 30/11 el Gobierno estará en funciones: hay que pasar el vigía del BOE cada semana.`:`<b>Gobierno en funciones desde el 30/11/2026.</b> Pasa el vigía del BOE cada semana y rehaz la estructura cuando se forme el nuevo Gobierno.`;
+const kp=[[K.con_titular+' / '+K.unidades,'unidades con titular (DG en adelante)'],[K.vacantes,'vacantes o sin titular'],[K.otros,'otros altos cargos'],[K.entidades,'entidades con consejo'],[K.personas_consejo,'personas en consejos'],[K.verif+'%','filas de consejo «actual verificado»'],[K.cruces,'consejeros que son altos cargos'],[K.boe_n,'movimientos BOE registrados'],[K.t_pend+' / '+K.t_hechas+(K.t_fall?' / '+K.t_fall+' fallidas':''),'tareas pendientes / hechas']];
+$('#kpis').innerHTML=kp.map(([b,s])=>`<div class="kpi"><b>${esc(b)}</b><span>${esc(s)}</span></div>`).join('');
+$('#tmin').innerHTML='<tr><th>Ministerio</th><th class="num">Unid.</th><th class="num">SE</th><th class="num">DG</th><th>Origen del titular</th><th class="num">Vac.</th></tr>'+DATA.mins.map(m=>{const t=m.n||1;const w=x=>(x/t*100).toFixed(1)+'%';return `<tr><td>${esc(m.m)}</td><td class="num">${m.n}</td><td class="num">${m.se}</td><td class="num">${m.dg}</td><td><div class="bar" title="CV ${m.cv} · verificado ${m.ver} · BOE ${m.boe} · vacantes ${m.vac}"><i style="width:${w(m.cv)};background:var(--accent)"></i><i style="width:${w(m.ver)};background:var(--ok)"></i><i style="width:${w(m.boe)};background:var(--warn)"></i><i style="width:${w(m.vac)};background:var(--bad)"></i></div></td><td class="num">${m.vac?`<span class="chip bad" title="${esc(m.vacs.join(' · '))}">${m.vac}</span>`:'0'}</td></tr>`}).join('');
+$('#tboe').innerHTML='<tr><th>Fecha</th><th>Tipo</th><th>Persona</th><th>Cargo</th></tr>'+DATA.mov.map(r=>`<tr><td class="mono">${fd(r.fecha_boe)}</td><td><span class="chip ${r.tipo==='cese'?'bad':'ok'}">${esc(r.tipo)}</span></td><td>${esc(r.nombre)}</td><td><a href="https://www.boe.es/diario_boe/txt.php?id=${esc(r.identificador)}">${esc(r.cargo)}</a></td></tr>`).join('');
+const fr=f=>!f?'bad':f>='2026-09-01'?'ok':f>='2026-01-01'?'warn':'bad';
+const bloques=[...new Set(DATA.ents.map(e=>e.b))].sort();
+$('#fbloque').innerHTML='<option value="">todos</option>'+bloques.map(b=>`<option>${esc(b)}</option>`).join('');
+function ents(){const b=$('#fbloque').value,f=$('#ffresc').value;
+ $('#tent').innerHTML='<tr><th>Entidad</th><th>Bloque</th><th>Primer ejecutivo</th><th class="num">Filas</th><th class="num">Altos cargos</th><th class="num">% verificado</th><th>Dato a</th></tr>'+DATA.ents.filter(e=>(!b||e.b===b)&&(!f||fr(e.f)===f)).map(e=>`<tr><td>${esc(e.n)}</td><td class="sub">${esc(e.b)}</td><td>${esc(e.pe)}</td><td class="num">${e.filas}</td><td class="num">${e.ac||''}</td><td class="num">${e.ver}%</td><td><span class="chip ${fr(e.f)}">${fd(e.f)}</span></td></tr>`).join('');}
+$('#fbloque').onchange=ents;$('#ffresc').onchange=ents;ents();
+const ec={pendiente:'neu',hecha:'ok',fallida:'bad',manual:'warn'};
+$('#ttar').innerHTML='<tr><th>Id</th><th>Tarea</th><th>Modelo</th><th>Estado</th></tr>'+DATA.tareas.map(t=>`<tr><td class="mono">${t.id}</td><td>${esc(t.nombre)}<div class="sub mono">${esc(t.ej)}</div></td><td class="mono">${esc(t.modelo)}</td><td><span class="chip ${ec[t.estado]||'neu'}">${esc(t.estado)}</span></td></tr>`).join('');
+$('#ttop').innerHTML='<tr><th>Persona</th><th class="num">Consejos</th><th>Cargo en la Administración</th></tr>'+DATA.top.map(p=>`<tr><td>${esc(p.n)}</td><td class="num">${p.j.length}</td><td class="sub">${esc(p.c[0]||'—')}</td></tr>`).join('');
+const norm=s=>s.normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase();
+const IDX=DATA.pers.map(p=>norm(p.n));
+function buscar(){const q=norm($('#q').value.trim());if(q.length<3){$('#res').innerHTML='<div class="sub">Escribe al menos 3 letras. Ejemplos con datos: '+DATA.top.slice(0,3).map(p=>esc(p.n)).join(', ')+'.</div>';return;}
+ const out=[];for(let i=0;i<IDX.length&&out.length<30;i++)if(IDX[i].includes(q))out.push(DATA.pers[i]);
+ $('#res').innerHTML=out.length?out.map(p=>`<div class="p"><b>${esc(p.n)}</b>${p.c.length?`<div class="lab">Cargo en la Administración</div><ul>${p.c.map(c=>`<li>${esc(c)}</li>`).join('')}</ul>`:''}${p.j.length?`<div class="lab">Consejos</div><ul>${p.j.map(c=>`<li>${esc(c)}</li>`).join('')}</ul>`:''}</div>`).join(''):'<div class="sub">Sin resultados. Prueba solo con el primer apellido.</div>';}
+$('#q').oninput=buscar;buscar();
+</script>
+</body>
+</html>
