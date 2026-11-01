@@ -1,0 +1,16 @@
+Hoy es 1 de noviembre de 2026. Investigación para EsadeEcPol sobre consejos de administración de empresas públicas estatales españolas. Usa SOLO fuentes vivas (tu memoria no vale: ha habido muchos cambios en 2025-2026; hay elecciones generales el 29-11-2026). Herramientas: WebSearch, WebFetch y curl vía Bash. Si una web bloquea (403/503), NO falsees cabeceras ni user-agent: usa alternativas (cuentas anuales e informes de gobierno corporativo en transparencia.gob.es o en la web de la matriz, BORME en boe.es, referencias del Consejo de Ministros en lamoncloa.gob.es, prensa). Sé eficiente: no más de ~15 búsquedas por entidad. No inventes nada; si un dato no consta, déjalo vacío y dilo en nota.
+
+SALIDA: CSV UTF-8 con cabecera exacta:
+empresa,forma_juridica,adscripcion_o_matriz,participacion_publica_pct,cargo,nombre,primer_ejecutivo,tipo_consejero,otro_cargo_publico,fuente_url,fecha_dato,nota
+Una fila por persona y entidad (incluye secretario no consejero). primer_ejecutivo = sí/no. tipo_consejero = ejecutivo/dominical/independiente/otro externo/n.d. otro_cargo_publico = cargo público que la fuente atribuya al vocal. En nota empieza por [actual verificado] o [último dato disponible]. Usa el módulo csv de Python para escribir (comillas correctas). Al terminar, imprime un resumen de 5 líneas: entidades, filas, huecos.
+
+TAREA B — completar huecos de consejos ya empezados. Para cada entidad, consejo COMPLETO actual:
+(1) Sareb: presidente ejecutivo Leopoldo Puig; FROB consejero persona jurídica; tengo Carmen Allo, Cristina Vidal, Julián Navarro, Joaquín de Fuentes (sin verificar). Faltan ~3 consejeros y el secretario. sareb.es bloquea; prueba Memoria FROB 2025, cuentas anuales, BORME, CNMV no (bloquea).
+(2) SELAE (Loterías y Apuestas del Estado): presidente Jesús Huerta Almendro; faltan vocales y secretario. selae.es bloquea; busca el PDF Lista_Consejeros más reciente, cuentas anuales en transparencia.gob.es, BORME.
+(3) CERSA (Compañía Española de Reafianzamiento): presidente Miguel Gómez-Pavón López, CD Rafael Sánchez Acera; faltan vocales, secretario y % capital.
+(4) Epicom (40% SEPI): solo presidente Donato Martínez Pérez de Rojas y dos consejeros (Manuel Escalante, Emilio Varela); faltan resto, consejeros de SEPI y CD.
+(5) Hispasat: consejo reconstruido desde BORME; confirmar composición completa y secretario.
+(6) España, Expansión Exterior S.M.E. (adscrita a Comercio): primer ejecutivo y consejo.
+(7) Consorcio de Compensación de Seguros (EPE, Economía): presidente y consejo de administración.
+Incluye solo las personas que puedas documentar (también las ya conocidas, si las confirmas).
+Escribe el CSV en $WORKDIR/empresas/api_B_huecos.csv

@@ -91,3 +91,7 @@ Los salarios son retribuciones brutas oficiales. No incluyen topes salariales de
 - Los datos provienen de portales de transparencia oficiales, presupuestos y regulaciones económicas de cada administración.
 - Algunas instituciones pueden no estar actualizadas (ej. empresas que han cambiado de naturaleza jurídica).
 - Los salarios de alcaldes de municipios pequeños pueden ser simbólicos (dedicación parcial).
+
+## Altos cargos y consejos de empresas públicas (nov. 2026)
+
+Ver [`altos_cargos_2026/`](altos_cargos_2026/README.md): taxonomía de la AGE de DG hacia arriba con titulares verificados y consejos de administración de ~100 empresas públicas.
