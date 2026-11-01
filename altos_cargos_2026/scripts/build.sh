@@ -5,7 +5,7 @@ set -e
 PY=${PY:-"uv run -q --with pandas --with openpyxl python"}
 mkdir -p work && cd work
 for d in org cvdl agenda; do [ -e $d ] || ln -s ../fuentes/$d $d; done
-cp ../data/verificacion/verificacion_resultado.csv .
+cp ../data/verificacion/verificacion_resultado.csv . && cp ../data/verificacion/resultado_*.csv . 2>/dev/null || true
 python3 -I ../scripts/org_parse.py >/dev/null
 python3 -I ../scripts/units.py >/dev/null
 python3 -I ../scripts/units2.py >/dev/null

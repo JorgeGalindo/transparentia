@@ -18,7 +18,7 @@ def kind(s):
         if re.match(rx, s): return k
     return 'OTRO'
 def key(s, unit=False):
-    s = nz(s); s = re.sub(r'\(.*?\)', '', s); s = re.sub(UROLE if unit else ROLE, '', s.strip())
+    s = nz(s).replace('comunitat', 'comunidad'); s = re.sub(r'\(.*?\)', '', s); s = re.sub(UROLE if unit else ROLE, '', s.strip())
     return set(w for w in re.findall(r'[a-z0-9]+', s) if w not in STOP and len(w) > 1)
 def jac(a, b): return len(a & b) / max(1, len(a | b))
 def ovl(a, b): return len(a & b) / max(1, min(len(a), len(b)))

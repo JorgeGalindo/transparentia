@@ -1,7 +1,8 @@
 modelo: sonnet
 salida: data/consejos_por_bloque/tarea_completar_barrido_pge.csv
-estado: pendiente
+estado: hecha
 prioridad: 2
+ejecutada: 2026-11-01 20:27
 ---
 Barrido de cobertura. Lista de entidades ya cubiertas: columna `empresa` de {BASE}/data/empresas_publicas_consejos.csv.
 Fuente principal: Presupuestos Generales del Estado — sector público empresarial y fundacional (presupuestos de explotación y capital,

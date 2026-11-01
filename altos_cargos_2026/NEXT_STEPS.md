@@ -14,20 +14,19 @@ marcadas como trabajo manual o de Chrome.
 
 ## Prioridad 1: calidad de lo que ya hay
 
-- [ ] **012 · Verificación muestral de noviembre** (Sonnet). Hay que repetirla cada mes: `generar_tareas.py` la crea sola.
-- [ ] **001 · Completar CERSA y Epicom** (Sonnet).
-- [ ] **013–017 · Refresco de consejos con datos anteriores a junio de 2026** (Sonnet): SELAE, Hunosa, MAYASA, Tragsa,
+- [x] **012 · Verificación muestral de noviembre**: 28 de 30 confirmados; corregidos la SGT de Defensa y Casa Árabe, ambas sin titular identificado. Se repite cada mes: `generar_tareas.py` la crea sola.
+- [ ] **Identificar a los titulares de la SGT de Defensa y de Casa Árabe** (Haiku, BOE).
+- [x] **001 · CERSA completado** (8 filas). Epicom sigue sin consejo publicado.
+- [x] **013–017 · Refresco de consejos** (Sonnet): casi todo confirmado y pocos cambios. Siguen como último dato disponible: SELAE, Hunosa, MAYASA, ICO, Cetarsa, COFIDES, Rodalies, EGS, ENSA y Acuamed. El siguiente paso es el BORME y las cuentas 2025: SELAE, Hunosa, MAYASA, Tragsa,
       Cetarsa, Aena, COFIDES, ICO, Enusa, ENSA, Acuamed, SIEPSE, Correos, Ebro, Enagás, Rodalies, SEITT, EGS…
-- [ ] **Revisar `data/seguimiento/boe_sin_encaje.csv`** (manual). Son los nombramientos que el vigía no sabe colocar;
-      hoy solo queda el delegado del Gobierno en la Comunitat Valenciana.
-- [ ] **003 · Delegado en la Comunitat Valenciana y presidencia de SEITT** (Haiku).
+- [ ] **Revisar `data/seguimiento/boe_sin_encaje.csv`** tras cada vigía (hoy está vacío).
+- [x] **003**: Rogelio Llanes confirmado como delegado en la Comunitat Valenciana. La presidencia de SEITT sigue sin confirmar tras el relevo en la Secretaría General de Transporte Terrestre.
 - [ ] **Contraste de las cotizadas con la CNMV** (Chrome; la ficha pública no muestra el consejo). Alternativa: el IAGC
       2025 en PDF de cada cotizada, que puede ser una tarea Sonnet.
 
 ## Prioridad 2: cobertura
 
-- [ ] **002 · Barrido con los PGE (SEPG) de sociedades estatales y EPE que falten** (Sonnet). Después, crear tareas de
-      consejo completo para las relevantes.
+- [~] **002 · Barrido con los PGE**: muy pobre, solo encontró BFA Tenedora de Acciones. Hay que repetirlo con otra fuente: el anexo de sociedades de los PGE en PDF descargado por Bash, o el INVENTE de la IGAE desde Chrome.
 - [ ] **Organismos públicos con consejo rector**: AEAT, CSIC, ICEX ya está, IDAE ya está, CNMC/CNMV son reguladores. Hay
       que decidir si entran en la base de consejos.
 - [ ] **Fundaciones del sector público estatal**: la Fundación SEPI, FECYT, Fundación EOI… Decidir si entran.

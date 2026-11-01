@@ -1,7 +1,8 @@
 modelo: haiku
 salida: data/verificacion/tarea_revisar_delegados_seitt.csv
-estado: pendiente
+estado: hecha
 prioridad: 3
+ejecutada: 2026-11-01 20:31
 ---
 Dos comprobaciones puntuales con el BOE (boe.es/buscar) y la web de la entidad. NO uses el formato de consejos: escribe CSV con columnas
 cargo,titular_actual,fuente_url,fecha,nota.

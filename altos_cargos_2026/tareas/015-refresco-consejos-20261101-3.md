@@ -1,7 +1,8 @@
 modelo: sonnet
 salida: data/consejos_por_bloque/tarea_refresco_20261101_3.csv
-estado: pendiente
+estado: hecha
 prioridad: 2
+ejecutada: 2026-11-01 20:30
 ---
 Refresca el consejo de administración COMPLETO y el primer ejecutivo de estas entidades (sustituye a lo que hay en la base; puedes ver lo actual en {BASE}/data/empresas_publicas_consejos.csv). Busca cambios posteriores a la fecha del dato actual:
 - Hipódromo de la Zarzuela (dato actual: 2026-01-01)
