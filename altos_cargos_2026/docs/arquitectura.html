@@ -22,7 +22,7 @@ figure svg{display:block;width:100%;min-width:760px;height:auto;color:var(--ink)
 figcaption{font-size:14px;color:var(--muted);margin-top:8px;max-width:80ch}
 h1+p{color:var(--muted);font-size:14.5px}
 </style></head><body><main><h1>Arquitectura · Fase 2: ¿quién ocupa los puestos que deberían ser técnicos?</h1>
-<p>Versión 0 · 1/11/2026 · Documento de diseño: todavía no se ha ejecutado nada de lo que aquí se describe.
+<p>Versión 1 · 1/11/2026 · Documento de diseño, con las decisiones de Jorge del 1/11 incorporadas (sección 12). Todavía no se ha ejecutado nada de lo que aquí se describe.
 Lo usan Claude, Codex y la cola de tareas por API como contexto común.</p>
 <h2>0. Objetivo</h2>
 <p><strong>Pregunta.</strong> En los puestos del ejecutivo y de las empresas públicas que, por norma o por función, deberían ocupar
@@ -39,11 +39,13 @@ se registran, pero no cuentan como afiliación.</p>
 <li><strong>Clases de puesto, fijadas antes de mirar a las personas:</strong><ul>
 <li><strong>T-legal</strong>: subsecretarios, secretarios generales técnicos y directores generales. La Ley 40/2015 (arts. 63–66)
  exige que sean funcionarios de carrera A1, salvo excepción en el real decreto de estructura.</li>
-<li><strong>T-empresa</strong>: primeros ejecutivos y consejeros de empresas públicas. Las directrices de la OCDE sobre empresas
- públicas piden consejos profesionales.</li>
+<li><strong>T-empresa</strong>: primeros ejecutivos y consejeros de empresas públicas, <strong>incluidas las sillas dominicales que ocupan
+ funcionarios de ministerios</strong>: no van aparte. Las directrices de la OCDE sobre empresas públicas piden consejos
+ profesionales.</li>
 <li><strong>T-regulador</strong>: presidencias y consejos de reguladores y agencias técnicas.</li>
-<li><strong>P (político por diseño)</strong>: secretarios de Estado, secretarios generales de libre designación, gabinetes,
- delegados del Gobierno y comisionados. <strong>Es el grupo de referencia.</strong></li>
+<li><strong>P (político por diseño)</strong>: secretarios de Estado, secretarios generales de libre designación, gabinetes y
+ comisionados. <strong>Es el grupo de referencia.</strong></li>
+<li><strong>Fuera del análisis</strong>: embajadores (también los políticos), delegados del Gobierno, mandos militares y mutuas.</li>
 </ul>
 </li>
 <li><strong>Estándar de evidencia.</strong> Cada hecho codificado lleva fuente (URL y fecha) y una cita textual. Sin evidencia no hay
@@ -60,7 +62,9 @@ se registran, pero no cuentan como afiliación.</p>
 <li>Solo se usa información <strong>manifiestamente pública</strong>: cargos electos, candidaturas, cargos orgánicos y
  declaraciones públicas.</li>
 <li>No se infiere militancia de indicios débiles.</li>
-<li>Se publica en agregado. Cualquier dato individual pasa antes por el delegado de protección de datos (DPO) de Esade.</li>
+<li><strong>Se publica también a nivel individual</strong>, pero la ficha de cada persona solo muestra afiliación <strong>pública y
+ notoria</strong> (niveles 3 y 4: cargo electo, cargo orgánico, miembro de un gobierno), siempre con su fuente. Las
+ candidaturas y los indicios débiles solo entran en los agregados de robustez, nunca en una ficha.</li>
 </ul>
 </li>
 <li><strong>Hacia delante y automático.</strong> Cada nombramiento nuevo que detectan los vigías dispara, por cola, la búsqueda de su
@@ -539,9 +543,47 @@ Objective</em>, <em>El Debate</em>) sin metodología publicada. Ese es el hueco 
 </tr>
 </tbody>
 </table></div>
-<p><strong>Tiempo:</strong> el camino crítico es F0 → F1 → (F2 ∥ F3) → F4 → F5 → F6, de <strong>13 a 16 días laborables</strong>. Si se arranca el
-2/11, los descriptivos v1 estarían <strong>hacia el 20–27 de noviembre</strong>, en torno a las elecciones. El momento de publicarlos
-lo decides tú.</p>
+<p><strong>Tiempo:</strong> el camino crítico es F0 → F1 → (F2 ∥ F3) → F4 → F5 → F6, de <strong>13 a 16 días laborables</strong>. Decisión: los
+descriptivos v1 salen <strong>antes del 29/11</strong>, así que el calendario va apretado y sin holgura para retrasos en la clave de
+API o en Codex:</p>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Fechas</th>
+<th>Fase</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>2–3 nov.</td>
+<td>F0 codebook (y arranca la literatura, que corre en paralelo hasta el 5)</td>
+</tr>
+<tr>
+<td>3–4 nov.</td>
+<td>F1 base relacional</td>
+</tr>
+<tr>
+<td>5–10 nov.</td>
+<td>F2 cargos electos ∥ F3 trayectorias</td>
+</tr>
+<tr>
+<td>10–12 nov.</td>
+<td>F4 enriquecimiento agéntico</td>
+</tr>
+<tr>
+<td>12–17 nov.</td>
+<td>F5 codificación; <strong>tu validación (4–6 h) el 16–17</strong></td>
+</tr>
+<tr>
+<td>18–19 nov.</td>
+<td>F6 descriptivos v1 y fichas</td>
+</tr>
+<tr>
+<td>20–27 nov.</td>
+<td>Margen, revisión y publicación</td>
+</tr>
+</tbody>
+</table></div>
 <p><strong>Coste API (clave de pago):</strong>
 - Arranque: <strong>unos 300–400 $</strong>, con techo de 500 $ si hay que repetir pasadas.
 - La mayor partida es la búsqueda agéntica: unos 70.000 tokens por persona, buena parte en caché; Sonnet 5.5 cuesta
@@ -710,18 +752,18 @@ lo decides tú.</p>
 <li>La <strong>cola <code>tareas/</code></strong> recibe el campo <code>agente:</code> y nuevos tipos de tarea (<code>enriquecer</code>, <code>codificar</code>, <code>literatura</code>).</li>
 <li>El <strong>panel</strong> gana pestañas: perfiles, PPSE por clase y evolución.</li>
 </ul>
-<h2>12. Decisiones que necesito de ti</h2>
+<h2>12. Decisiones tomadas (Jorge, 1/11/2026)</h2>
 <ol>
-<li><strong>Sillas dominicales ocupadas por funcionarios de ministerios.</strong> Son un 40 % aprox. de las sillas de empresas
-    públicas. ¿Van aparte? <em>Propuesta: sí, como grupo propio.</em></li>
-<li><strong>Umbral de experiencia.</strong> <em>Propuesta: 3 años en el sector, o credencial técnica, o dirección comparable; sensibilidad
-    con 0 y 5 años.</em></li>
-<li><strong>Evidencia mínima de afiliación para el indicador principal.</strong> <em>Propuesta: nivel 3 o más; las candidaturas, solo en
-    la robustez.</em></li>
-<li><strong>Publicación.</strong> ¿Solo agregados, o también fichas individuales? Antes, consulta al DPO de Esade.</li>
-<li><strong>Calendario.</strong> ¿Descriptivos v1 antes del 29/11 (foto de fin de legislatura) o después?</li>
-<li><strong>Embajadores políticos y delegados del Gobierno.</strong> ¿Entran en el núcleo o van como módulo aparte? <em>Propuesta:
-    módulo aparte.</em></li>
-<li><strong>Clave de API.</strong> Que no pase por el chat: guárdala tú en el llavero desde tu Terminal con
-    <code>security add-generic-password -a "$USER" -s anthropic-api-key-pago -w</code> (te pedirá la clave sin mostrarla).</li>
-</ol></main></body></html>
+<li><strong>Sillas dominicales de funcionarios de ministerios:</strong> no van aparte; entran en T-empresa.</li>
+<li><strong>Umbral de experiencia:</strong> 3 años en el sector, o credencial técnica, o dirección comparable; sensibilidad con 0 y
+    5 años.</li>
+<li><strong>Indicador principal:</strong> afiliación de nivel 3 o más; las candidaturas, solo en la robustez.</li>
+<li><strong>Publicación:</strong> también fichas individuales, pero solo con afiliación pública y notoria (niveles 3–4), siempre con
+    fuente.</li>
+<li><strong>Calendario:</strong> descriptivos v1 antes del 29/11.</li>
+<li><strong>Embajadores políticos y delegados del Gobierno:</strong> fuera del análisis.</li>
+</ol>
+<p><strong>Pendiente para arrancar:</strong>
+- La clave de API en el llavero. Que no pase por el chat: guárdala desde tu Terminal con
+  <code>security add-generic-password -a "$USER" -s anthropic-api-key-pago -w</code>, que te la pide sin mostrarla.
+- Codex conectado al repo, con un <code>AGENTS.md</code> que preparo al arrancar.</p></main></body></html>
