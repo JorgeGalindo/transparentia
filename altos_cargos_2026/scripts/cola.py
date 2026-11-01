@@ -31,7 +31,9 @@ def marcar(p, estado):
 def tareas(): return sorted([leer(p) for p in glob.glob(os.path.join(TD, '[0-9]*.md'))], key=lambda h: (h.get('prioridad', '2'), h['id']))
 
 def correr(h):
-    comun = open(os.path.join(TD, '_comun.md'), encoding='utf-8').read().replace('{HOY}', datetime.date.today().isoformat())
+    base_comun = os.path.join(BASE, 'AGENTS.md') if h.get('comun') == 'fase2' else os.path.join(TD, '_comun.md')
+    comun = open(base_comun, encoding='utf-8').read().replace('{HOY}', datetime.date.today().isoformat())
+    comun = f'Hoy es {datetime.date.today().isoformat()}. Directorio base: {BASE}\n\n' + comun
     salida = os.path.join(BASE, h['salida'])
     prompt = comun + '\n\nTAREA ' + h['nombre'] + ':\n' + h['body'].replace('{BASE}', BASE) + f'\n\nEscribe la salida en: {salida}'
     tok = subprocess.run(['security', 'find-generic-password', '-a', os.environ['USER'], '-s', 'anthropic-api-key', '-w'],
@@ -52,7 +54,7 @@ def main():
         for h in ts: print(f"{h['id']}  {h.get('estado','?'):9} {h.get('modelo','?'):7} p{h.get('prioridad','?')}  {h['nombre']}")
         return
     mx = int(a[a.index('--max') + 1]) if '--max' in a else 3
-    sel = [h for h in ts if h.get('estado') == 'pendiente']
+    sel = [h for h in ts if h.get('estado') == 'pendiente' and h.get('agente', 'claude-p') == 'claude-p']
     if '--solo' in a: sel = [h for h in ts if h['id'] == a[a.index('--solo') + 1]]
     print('lanzando:', [h['nombre'] for h in sel])
     with cf.ThreadPoolExecutor(mx) as ex:
