@@ -1,7 +1,7 @@
 """Une los CSV de consejos (bloques + jobs API) y enlaza consejeros con la tabla de altos cargos."""
 import pandas as pd, glob, re, unicodedata
 H="empresa,forma_juridica,adscripcion_o_matriz,participacion_publica_pct,cargo,nombre,primer_ejecutivo,tipo_consejero,otro_cargo_publico,fuente_url,fecha_dato,nota".split(",")
-BLOQ={'bloque1':'SEPI mayoritarias','bloque2':'SEPI minoritarias + Aena','bloque3':'Transportes','bloque4':'Financieras/económicas/digitales','bloque5':'Resto','api_A':'Transportes','api_B':'Huecos varios','api_C':'Barrido cobertura (solo primer ejecutivo)'}
+BLOQ={'bloque1':'SEPI mayoritarias','bloque2':'SEPI minoritarias + Aena','bloque3':'Transportes','bloque4':'Financieras/económicas/digitales','bloque5':'Resto','api_A':'Transportes','api_B':'Huecos varios','api_C':'Barrido cobertura (solo primer ejecutivo)','api_D':'Huecos varios'}
 fr=[]
 for f in sorted(glob.glob('empresas/bloque*.csv'))+sorted(glob.glob('empresas/api_*.csv')):
     d=pd.read_csv(f,dtype=str).fillna('')

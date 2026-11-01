@@ -15,6 +15,6 @@ $PY -I -W ignore ../scripts/merge.py
 $PY -I -W ignore ../scripts/post.py
 $PY -I -W ignore ../scripts/gen_otros.py
 $PY -I -W ignore ../scripts/apply_verif.py
-mkdir -p empresas && cp ../data/consejos_por_bloque/*.csv empresas/
+rm -rf empresas && mkdir -p empresas && cp ../data/consejos_por_bloque/*.csv empresas/
 $PY -I -W ignore ../scripts/consolidate_empresas.py
 cp altos_cargos_estructura.csv otros_altos_cargos.csv empresas_publicas_consejos.csv ../data/

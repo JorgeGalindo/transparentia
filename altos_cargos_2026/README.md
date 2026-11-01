@@ -13,7 +13,7 @@ Gobierno estará en funciones y habrá ceses y nombramientos: la foto caduca rá
 |---|---|---|
 | `altos_cargos_estructura.csv` | Taxonomía de la AGE de director general hacia arriba: una fila por unidad, con su titular | 351 |
 | `otros_altos_cargos.csv` | Altos cargos que no son titulares de una unidad de esa estructura | 371 |
-| `empresas_publicas_consejos.csv` | Primer ejecutivo y consejo de administración de empresas públicas: una fila por persona y empresa | 976 (107 entidades, 879 personas) |
+| `empresas_publicas_consejos.csv` | Primer ejecutivo y consejo de administración de empresas públicas: una fila por persona y empresa | 974 (105 entidades, 891 personas) |
 | `consejos_por_bloque/` | Los CSV originales de cada bloque de investigación | |
 | `verificacion/` | Huecos, conflictos y muestra aleatoria contrastados con el BOE | 47 |
 
@@ -65,13 +65,13 @@ octubre de 2026 que pueden no estar aún en esa lista.
 | Transportes | Adif, Adif AV, el grupo Renfe (y Rodalies), ENAIRE, ENAIRE Global Services, CRIDA y Startical (estas dos incompletas), Puertos del Estado y los presidentes de las 28 autoridades portuarias, Ineco, SEITT, SASEMAR y SENASA |
 | Financieras/económicas/digitales | ICO, AXIS, CESCE, COFIDES, ENISA, CERSA, SELAE, FNMT-RCM, SEGIPSA, ICEX, Paradores, SEGITTUR, CDTI, Red.es, SETT, INCIBE, Sareb y la Comisión Rectora del FROB |
 | Resto | Casa 47, IDAE, Acuamed, ACUAES, SEIASA, Isdefe, SIEPSE, AC/E y Corporación RTVE |
-| Huecos | Consorcio de Compensación de Seguros, y Hispasat y SELAE ampliadas |
+| Huecos | Consorcio de Compensación de Seguros e Hispasat ampliada; Sareb (completo, web leída en Chrome, 1/11/2026) y SELAE (lista oficial de consejeros del 29/01/2025, último dato publicado) |
 
 Columnas principales:
 - `cargo`, `primer_ejecutivo` (sí/no) y `tipo_consejero`. `tipo_consejero` solo se rellena cuando la fuente lo dice; si no, va como n.d.
 - `otro_cargo_publico`: el que atribuye la fuente.
 - `fuente_url`, `fecha_dato` y `nota`, que empieza por [actual verificado] o [último dato disponible].
-- `alto_cargo_AGE_actual`: enlace con las dos tablas anteriores. Hay 99 consejeros que hoy son altos cargos de la AGE.
+- `alto_cargo_AGE_actual`: enlace con las dos tablas anteriores. Hay 98 consejeros que hoy son altos cargos de la AGE.
   - El enlace es por nombre exacto normalizado.
   - Las coincidencias parciales (un nombre contenido en el otro) van marcadas `[match parcial]` y hay que revisarlas.
 
@@ -95,7 +95,7 @@ Columnas principales:
    (consolidado del 21/10/2026), las cuentas anuales y el IAGC, el BORME, los OIR de la CNMV y la prensa.
 
 **Webs que bloquean el acceso automático.** No se han falseado cabeceras. Algunas se han leído en Chrome.
-- CNMV: 403. Falta contrastar las cotizadas con su registro.
+- CNMV: 403 a curl, y desde Chrome su ficha pública de entidad no muestra el consejo. Las cotizadas no están contrastadas con su registro; se usaron la web corporativa y los OIR.
 - Sareb y SELAE: 403.
 - CERSA: 503.
 - DIR3 (directorio oficial de unidades): petición rechazada.
@@ -103,8 +103,8 @@ Columnas principales:
 ## Huecos conocidos
 
 **Empresas incompletas:**
-- Sareb: faltan unos 3 consejeros y el secretario.
-- SELAE: solo está el presidente; faltan los vocales.
+- Sareb: completo (6 consejeros), pero sin secretario publicado.
+- SELAE: la última lista oficial es del 29/01/2025; puede haber cambios posteriores.
 - CERSA: solo presidente y consejero delegado.
 - Epicom: solo presidente y dos consejeros.
 - SEITT: la presidencia va con el cargo de secretario general de Transporte Terrestre. El BORME aún no recoge el relevo de Báguena por Sara Hernández del Olmo (BOE-A-2026-18440).
